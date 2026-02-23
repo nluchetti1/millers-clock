@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GARGANTUA_OS // V.10</title>
+    <title>GARGANTUA_OS // V.12</title>
     <style>
         :root { 
             --neon-blue: #00f3ff; --neon-pink: #ff0055; --terminal-green: #00ff41; --bg: #020205; 
@@ -15,7 +15,7 @@
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; min-height: 100vh; margin: 0;
             overflow: hidden; position: relative;
-            touch-action: manipulation;
+            touch-action: none;
         }
 
         body::before {
@@ -35,20 +35,12 @@
             border-radius: 41%; animation: drift 7s infinite linear;
             filter: blur(3px);
         }
-
         @keyframes drift { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .container {
             background: rgba(5, 5, 12, 0.96); padding: 1.2rem; 
             border: 1px solid var(--neon-blue); width: 88%; max-width: 450px; z-index: 10;
             box-shadow: 0 0 25px rgba(0, 243, 255, 0.2); position: relative;
-        }
-
-        h1 { font-size: 1rem; letter-spacing: 3px; margin: 0; text-align: center; color: #fff; }
-        
-        input {
-            width: 100%; padding: 8px; background: #000; border: 1px solid var(--neon-blue); 
-            color: var(--neon-blue); margin: 5px 0; font-family: inherit; font-size: 0.8rem; box-sizing: border-box;
         }
 
         .btn-mission {
@@ -61,22 +53,39 @@
 
         #gameArea {
             margin-top: 10px; border: 1px dashed #444; height: 100px; position: relative;
-            background: rgba(0,0,0,0.7); overflow: hidden; touch-action: none;
+            background: rgba(0,0,0,0.7); overflow: hidden;
         }
         #endurance {
-            position: absolute; left: 15px; top: 40%; width: 24px; height: 24px;
+            position: absolute; left: 15px; top: 40%; width: 20px; height: 20px;
             background: #fff; clip-path: polygon(0 40%, 100% 0, 70% 50%, 100% 100%, 0 60%);
-            transition: top 0.05s linear;
         }
         .safe-zone {
-            position: absolute; right: 0; top: 25%; height: 35%; width: 30px;
-            background: rgba(0, 255, 65, 0.2); border-left: 2px solid var(--terminal-green);
+            position: absolute; right: 0; top: 25%; height: 40%; width: 35px;
+            background: rgba(0, 255, 65, 0.15); border-left: 2px solid var(--terminal-green);
+        }
+
+        /* Docking Game Styles */
+        #dockingUI {
+            display: none; border: 2px solid var(--neon-pink); padding: 10px; margin-top: 10px;
+            background: rgba(255, 0, 85, 0.1); text-align: center;
+        }
+        .dock-ring {
+            width: 60px; height: 60px; border: 4px dashed var(--neon-pink);
+            border-radius: 50%; margin: 10px auto; position: relative;
+        }
+        #pointer {
+            position: absolute; top: 50%; left: 50%; width: 30px; height: 4px;
+            background: #fff; transform-origin: left center;
+        }
+        .target-gate {
+            position: absolute; top: 50%; right: -5px; width: 15px; height: 15px;
+            background: var(--terminal-green); transform: translateY(-50%);
         }
 
         #transmission { 
-            height: 75px; font-size: 0.65rem; font-style: italic; color: #aaa; 
+            height: 70px; font-size: 0.65rem; font-style: italic; color: #eee; 
             margin-top: 10px; border-left: 2px solid var(--neon-pink); padding-left: 10px;
-            display: flex; align-items: center; overflow: hidden;
+            display: flex; align-items: center; overflow: hidden; line-height: 1.4;
         }
     </style>
 </head>
@@ -85,29 +94,36 @@
     <div class="wave-container" id="waveBox"><div class="liquid"></div></div>
 
     <div class="container" id="mainCard">
-        <h1>GARGANTUA_STATION_KEEPING</h1>
-        <div id="tarsDisplay" style="font-size:0.6rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: Thrusters hot. Romilly is counting on you.</div>
+        <h1 style="font-size: 0.9rem; text-align: center;">GARGANTUA_COMMAND</h1>
+        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "It's not possible." // COOPER: "No, it's necessary."</div>
         
-        <button class="btn-mission" id="startBtn">START MISSION</button>
+        <button class="btn-mission" id="startBtn">INITIALIZE DOCKING</button>
 
         <div id="ui-elements" style="display:none">
-            <input type="text" id="customTask" placeholder="OBJECTIVE...">
-            <input type="number" id="earthInput" placeholder="EARTH_MINS">
+            <input type="text" id="customTask" style="width:100%; padding:8px; background:#000; border:1px solid var(--neon-blue); color:var(--neon-blue); margin-bottom:5px;" placeholder="OBJECTIVE...">
+            <input type="number" id="earthInput" style="width:100%; padding:8px; background:#000; border:1px solid var(--neon-blue); color:var(--neon-blue);" placeholder="EARTH_MINS" oninput="calculate()">
 
             <div class="result-box">
                 <span id="millerTime">0.0000s</span>
-                <div style="background: #111; height: 6px; margin: 5px 0;"><div id="fuelFill"></div></div>
-                <p style="font-size: 0.5rem; text-align: left; margin: 0;">FUEL: <span id="fuelPct">100</span>%</p>
+                <div style="background: #111; height: 6px; margin: 10px 0;"><div id="fuelFill"></div></div>
                 
-                <div style="display:flex; justify-content:space-around; text-align:center; margin-top:5px;">
-                    <div><span id="dayCounter" style="font-size:1rem; font-weight:bold;">0</span><br><span style="font-size:0.4rem">DAYS_LOST</span></div>
-                    <div><span id="yearCounter" style="font-size:1rem; font-weight:bold;">0.00</span><br><span style="font-size:0.4rem">YEARS_LOST</span></div>
+                <div style="display:flex; justify-content:space-around; text-align:center;">
+                    <div><span id="dayCounter" style="font-size:1.1rem; font-weight:bold;">0</span><br><span style="font-size:0.4rem">DAYS_LOST</span></div>
+                    <div><span id="yearCounter" style="font-size:1.1rem; font-weight:bold;">0.00</span><br><span style="font-size:0.4rem">YEARS_LOST</span></div>
                 </div>
 
                 <div id="gameArea">
                     <div class="safe-zone"></div>
                     <div id="endurance"></div>
-                    <div style="position:absolute; bottom:5px; width:100%; text-align:center; font-size:0.5rem; color:var(--neon-blue); opacity:0.6;">TAP SCREEN TO PULSE</div>
+                    <div style="position:absolute; bottom:5px; width:100%; text-align:center; font-size:0.4rem; color:var(--neon-blue); opacity:0.6;">TAP TO THRUST</div>
+                </div>
+
+                <div id="dockingUI">
+                    <div style="font-size: 0.6rem; color: #fff;">MATCH ROTATION: TAP TO DOCK</div>
+                    <div class="dock-ring">
+                        <div id="pointer"></div>
+                        <div class="target-gate"></div>
+                    </div>
                 </div>
                 
                 <div id="transmission">> COMMS_OFFLINE</div>
@@ -117,31 +133,19 @@
 
     <script>
         const RATIO = 61320;
-        let audioCtx, earthDays = 0, fuel = 100, missionActive = false;
-        let endurancePos = 40, gravity = 0.5, velocity = 0;
+        let audioCtx, earthDays = 0, fuel = 100, missionActive = false, dockingMode = false;
+        let endurancePos = 40, gravity = 0.4, velocity = 0, rotation = 0;
 
-        const enduranceComms = [
+        const allComms = [
             "COOPER: This little maneuver's gonna cost us 51 years!",
-            "ROMILLY: I've waited years. I've studied the anomaly.",
-            "MURPH: Don't let me leave, Murph!",
-            "BRAND: Love transcends time and space.",
-            "PROF. BRAND: I'm not afraid of death. I'm afraid of time.",
-            "DOYLE: Start the engines, Cooper!",
-            "TARS: Plenty of slave labor left for the robots.",
-            "PROF. BRAND: Do not go gentle into that good night.",
-            "DOYLE: We are staying! We're not leaving without that data!",
-            "COOPER: Mankind was born on Earth. It was never meant to die here.",
+            "ROMILLY: I didn't want to sleep my life away.",
+            "MURPH: You're a ghost. You're my ghost.",
+            "DR. BRAND: We must reach far beyond our own lifespans.",
             "CASE: We are picking up an anomaly.",
-            "ROMILLY: Seven years per hour... that's much worse than I thought.",
-            "PROF. BRAND: We must reach far beyond our own lifespans."
-        ];
-
-        const tarsQuotes = [
-            "TARS: Honesty 90%. You're looking terrified, Cooper.",
-            "TARS: Humor 75%. Self-destruct in 5...",
-            "TARS: Romilly is aging at a rate of 1:60,000.",
-            "TARS: Thrusters are losing efficiency.",
-            "TARS: Want me to lower the humor settings?"
+            "COOPER: Cooper, what are you doing? // Docking.",
+            "BRAND: Love is the one thing that transcends time.",
+            "DOYLE: Start the engines, Cooper!",
+            "PROF. BRAND: Do not go gentle into that good night."
         ];
 
         function playClick(pitch = 1200) {
@@ -150,82 +154,89 @@
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'square'; osc.frequency.value = pitch;
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + 0.02);
         }
 
-        function pulseThrusters(e) {
+        window.addEventListener('touchstart', (e) => {
             if (!missionActive) return;
-            e.preventDefault();
-            velocity = -3.5; // Upward force
-            playClick(1800);
-        }
+            if (dockingMode) attemptDock();
+            else thrust();
+        });
+        window.addEventListener('mousedown', (e) => {
+            if (!missionActive) return;
+            if (dockingMode) attemptDock();
+            else thrust();
+        });
 
-        // Event Listeners for Game
-        const gameArea = document.getElementById('gameArea');
-        gameArea.addEventListener('touchstart', pulseThrusters, {passive: false});
-        gameArea.addEventListener('mousedown', pulseThrusters);
+        function thrust() { velocity = -3.2; playClick(1800); }
+
+        function attemptDock() {
+            const currentRot = rotation % 360;
+            // Success if pointer is roughly near 0 degrees (the right side gate)
+            if (currentRot > 340 || currentRot < 20) {
+                fuel = 50;
+                dockingMode = false;
+                document.getElementById('dockingUI').style.display = 'none';
+                document.getElementById('gameArea').style.display = 'block';
+                document.getElementById('tarsDisplay').innerText = "TARS: Docking successful. Fuel replenished.";
+            } else {
+                playClick(400); // Fail sound
+            }
+        }
 
         document.getElementById('startBtn').addEventListener('click', () => {
             missionActive = true;
             document.getElementById('startBtn').style.display = 'none';
             document.getElementById('ui-elements').style.display = 'block';
-            startEngine();
+            runEngine();
         });
 
-        function startEngine() {
+        function runEngine() {
             setInterval(() => {
                 if (fuel <= 0) return;
 
-                // Physics
-                velocity += gravity;
-                endurancePos += velocity;
-                
-                // Bounds
-                if (endurancePos > 95) { endurancePos = 95; velocity = 0; }
-                if (endurancePos < -5) { endurancePos = -5; velocity = 0; }
-                
-                document.getElementById('endurance').style.top = endurancePos + "%";
-
-                // Station Keeping Logic
-                let dilationMultiplier = 1;
-                const tars = document.getElementById('tarsDisplay');
-
-                if (endurancePos < 25 || endurancePos > 60) {
-                    dilationMultiplier = 8; // Penalty for failing game
-                    tars.innerText = "TARS: WARNING! Gravitational shear! Romilly is aging!";
-                    tars.style.color = "var(--neon-pink)";
+                if (dockingMode) {
+                    rotation += 25; // Spinning speed
+                    document.getElementById('pointer').style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
                 } else {
-                    dilationMultiplier = 1;
-                    if (earthDays % 15 === 0) tars.innerText = tarsQuotes[Math.floor(Math.random()*tarsQuotes.length)];
-                    tars.style.color = "var(--terminal-green)";
+                    velocity += gravity;
+                    endurancePos += velocity;
+                    if (endurancePos > 92) endurancePos = 92;
+                    if (endurancePos < 0) endurancePos = 0;
+                    document.getElementById('endurance').style.top = endurancePos + "%";
                 }
 
-                playClick();
-                earthDays += (1 * dilationMultiplier);
+                let dilation = (endurancePos < 25 || endurancePos > 65) ? 8 : 1;
                 
+                playClick();
+                earthDays += dilation;
                 document.getElementById('dayCounter').innerText = earthDays;
                 document.getElementById('yearCounter').innerText = (earthDays / 365.25).toFixed(2);
                 
-                // Faster Fuel Drain
-                fuel -= 0.25; 
+                fuel -= 0.3; 
                 document.getElementById('fuelFill').style.width = Math.max(0, fuel) + "%";
-                document.getElementById('fuelPct').innerText = Math.max(0, Math.floor(fuel));
                 
-                if (earthDays % 15 === 0) {
-                    document.getElementById('transmission').innerText = "> " + enduranceComms[Math.floor(Math.random()*enduranceComms.length)];
+                // Trigger Docking Mode at 15% fuel
+                if (fuel < 15 && !dockingMode) {
+                    dockingMode = true;
+                    document.getElementById('gameArea').style.display = 'none';
+                    document.getElementById('dockingUI').style.display = 'block';
+                    document.getElementById('tarsDisplay').innerText = "TARS: MATCH ROTATION! TAP TO DOCK!";
                 }
 
-                document.getElementById('waveBox').style.height = Math.min((earthDays/200)*100, 100) + "vh";
+                if (earthDays % 10 === 0) {
+                    document.getElementById('transmission').innerText = "> " + allComms[Math.floor(Math.random()*allComms.length)];
+                }
+
+                document.getElementById('waveBox').style.height = Math.min((earthDays/250)*100, 100) + "vh";
 
                 if (fuel <= 0) {
-                    tars.innerText = "TARS: Fuel exhausted. Station lost. Romilly is gone.";
-                    document.getElementById('mainCard').style.filter = "grayscale(1) brightness(0.5)";
+                    document.getElementById('tarsDisplay').innerText = "TARS: Endurance destroyed. Goodbye.";
+                    document.getElementById('mainCard').style.filter = "grayscale(1) brightness(0.3)";
                 }
-                
-                calculate();
             }, 1250);
         }
 
