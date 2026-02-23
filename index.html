@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GARGANTUA_OS // V.33</title>
+    <title>GARGANTUA_OS // V.34</title>
     <style>
         :root { 
             --neon-blue: #00f3ff; --neon-pink: #ff0055; --terminal-green: #00ff41; 
@@ -34,6 +34,13 @@
             background: #000; overflow: hidden; touch-action: none;
         }
         
+        /* The Red Pressure Line (Event Horizon) */
+        .event-horizon-line {
+            position: absolute; left: 60%; top: 0; width: 2px; height: 100%;
+            background: repeating-linear-gradient(0deg, transparent, var(--neon-pink) 5px, transparent 10px);
+            box-shadow: 0 0 10px var(--neon-pink); z-index: 1;
+        }
+
         #ship {
             position: absolute; left: 30%; top: 45%; width: 24px; height: 18px;
             background: #fff; clip-path: polygon(100% 40%, 0 0, 30% 50%, 0 100%, 100% 60%);
@@ -46,11 +53,9 @@
             background: radial-gradient(circle, #555 20%, #222 80%);
             border-radius: 50%; border: 2px solid #fff;
             box-shadow: 0 0 15px var(--neon-pink);
-            display: flex; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center; z-index: 4;
         }
-        .saboteur::before {
-            content: "MANN"; font-size: 7px; color: var(--neon-pink); font-weight: bold;
-        }
+        .saboteur::before { content: "MANN"; font-size: 7px; color: var(--neon-pink); font-weight: bold; }
 
         input {
             width: 100%; padding: 8px; background: #000; border: 1px solid var(--neon-blue); 
@@ -69,7 +74,7 @@
 
     <div id="winScreen">
         <h1 style="font-size: 3rem; margin: 0;">S T A Y</h1>
-        <p>DATA TRANSMITTED. <br> HUMANITY IS SAVED.</p>
+        <p>GRAVITY IS A SIGNAL. <br> DATA RECEIVED. SAVING MURPH.</p>
         <button onclick="location.reload()" style="padding:15px 30px; background:#000; color:#fff; border:none; margin-top:20px; cursor:pointer;">RE-SYNC</button>
     </div>
 
@@ -77,9 +82,9 @@
         <div id="warningHeader" style="background:var(--neon-pink); color:#fff; font-size:0.65rem; text-align:center; display:none; padding:5px; margin-bottom:8px; font-weight:bold;">
             SINGULARITY PRESSURE: HULL COMPROMISED
         </div>
-        <h1 style="font-size: 0.85rem; text-align: center; letter-spacing: 4px;">GARGANTUA_OS_V33</h1>
+        <h1 style="font-size: 0.85rem; text-align: center; letter-spacing: 4px;">GARGANTUA_OS_V34</h1>
         
-        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Data Sync Target: 20 Years. Watch the hull."</div>
+        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Data Sync Target: 20 Years. Avoid crossing the red line."</div>
         
         <button class="btn-mission" id="startBtn" onclick="initiateMission()" style="background:var(--neon-pink); color:#fff; border:none; padding:12px; width:100%; font-weight:bold; cursor:pointer;">ENGAGE MISSION</button>
 
@@ -100,6 +105,7 @@
 
                 <div id="gameArea" onclick="handleInput(event)" ontouchstart="handleInput(event)">
                     <div style="position:absolute; left:0; top:0; height:100%; width:20%; background:rgba(0,255,65,0.1); border-right:1px solid var(--terminal-green);"></div>
+                    <div class="event-horizon-line"></div>
                     <div id="ship"></div>
                 </div>
 
@@ -151,16 +157,15 @@
             document.getElementById('ui-elements').style.display = 'block';
             
             const timer = setInterval(() => {
-                // Gravity Drift
                 shipX = Math.min(94, shipX + (3 + shipX/12));
                 updateShip();
 
                 let dilation = (shipX > 20) ? Math.floor(Math.pow(1.09, shipX - 20) + 1) : 1;
                 
-                // Pressure Damage
-                if (shipX > 75) {
+                // PRESSURE LOGIC (Triggered by crossing the 60% Red Line)
+                if (shipX > 60) {
                     hull -= 6; 
-                    document.getElementById('warningHeader').innerText = "CRITICAL: SINGULARITY PRESSURE BREACH";
+                    document.getElementById('warningHeader').innerText = "CRITICAL: EVENT HORIZON BREACHED";
                     document.getElementById('warningHeader').style.display = 'block';
                 } else if (dilation > 1) {
                     document.getElementById('warningHeader').innerText = "RELATIVISTIC THREAT // MANN DETECTED";
@@ -169,18 +174,16 @@
                     document.getElementById('warningHeader').style.display = 'none';
                 }
 
-                // Update Stats
                 days += dilation;
                 let yrs = days / 365.25;
                 document.getElementById('dayCounter').innerText = days;
                 document.getElementById('yearCounter').innerText = yrs.toFixed(2);
                 
-                // Fail Check (happens AFTER damage is taken)
                 if (hull <= 0) {
                     hull = 0;
                     document.getElementById('hullFill').style.width = "0%";
                     document.getElementById('hullPct').innerText = "0";
-                    document.getElementById('tarsDisplay').innerText = "TARS: Hull failure at 0%. Mission lost.";
+                    document.getElementById('tarsDisplay').innerText = "TARS: Singularity reached. Mission failed.";
                     clearInterval(timer);
                     missionActive = false;
                     return;
@@ -195,7 +198,7 @@
                 }
 
                 if (Math.random() > 0.4) spawnMann();
-                if (shipX > 70) spawnMann();
+                if (shipX > 60) spawnMann(); // Aggressive spawn once past the line
 
                 for (let i = saboteurs.length - 1; i >= 0; i--) {
                     let s = saboteurs[i]; 
