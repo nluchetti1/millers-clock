@@ -3,169 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Miller's Planet | Time Dilation</title>
+    <title>GARGANTUA_OS // V.05</title>
     <style>
         :root { 
-            --accent: #4cc9f0; --danger: #ff4d4d; --bg: #05070a; 
-            --card-bg: rgba(10, 12, 18, 0.95);
+            --neon-blue: #00f3ff; --neon-pink: #ff0055; --terminal-green: #00ff41; --bg: #020205; 
         }
+        
         body {
-            background-color: var(--bg); color: #e0e0e0;
-            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg); color: var(--neon-blue);
+            font-family: 'Courier New', monospace;
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; min-height: 100vh; margin: 0;
             overflow: hidden; position: relative;
         }
-        .gargantua {
-            width: 100px; height: 100px; background: #000; border-radius: 50%;
-            margin: 0 auto 20px auto; position: relative;
-            box-shadow: 0 0 15px #fff, 0 0 30px var(--accent), 0 0 50px #f0a500;
+
+        /* Scanline Overlay */
+        body::before {
+            content: " "; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%; z-index: 100; pointer-events: none;
         }
-        .accretion-disk {
-            position: absolute; top: 50%; left: -25%; width: 150%; height: 2px;
-            background: linear-gradient(90deg, transparent, #f0a500, #fff, #f0a500, transparent);
-            transform: translateY(-50%) rotate(-5deg);
-        }
-        .wave {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 0vh; 
-            background: linear-gradient(to top, #1a3a4a 0%, #0a1e29 70%, transparent 100%);
+
+        /* The Liquid Wave - Multi-layered for depth */
+        .wave-container {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 0vh;
             transition: height 1.25s linear; z-index: 1;
-            border-top: 2px solid var(--accent); opacity: 0.5;
         }
+        .liquid {
+            position: absolute; bottom: 0; left: -50%; width: 200%; height: 500px;
+            background: rgba(0, 243, 255, 0.3); border-top: 5px solid var(--neon-blue);
+            border-radius: 40% 45% 0 0; animation: drift 5s infinite linear;
+            filter: blur(2px);
+        }
+        .liquid:nth-child(2) {
+            bottom: -10px; opacity: 0.5; animation: drift 7s infinite linear reverse;
+            background: rgba(255, 0, 85, 0.2);
+        }
+        @keyframes drift {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         .container {
-            background: var(--card-bg); padding: 2rem; border: 1px solid #333;
-            text-align: center; box-shadow: 0 0 60px rgba(0,0,0,1);
-            width: 90%; max-width: 450px; z-index: 10; backdrop-filter: blur(10px);
+            background: rgba(5, 5, 10, 0.95); padding: 2rem; 
+            border: 2px solid var(--neon-blue); width: 90%; max-width: 500px; z-index: 10;
+            box-shadow: 0 0 20px var(--neon-blue); position: relative;
+            transition: transform 0.1s;
         }
-        @keyframes panic {
-            0% { transform: translate(1px, 1px); }
-            50% { transform: translate(-2px, -1px); }
-            100% { transform: translate(1px, 1px); }
-        }
-        .panic-active { animation: panic 0.1s infinite; border-color: var(--danger) !important; }
-        h1 { color: var(--accent); letter-spacing: 4px; text-transform: uppercase; margin: 0; font-size: 1.2rem; }
-        .subtitle { font-size: 0.6rem; color: #555; margin-bottom: 20px; letter-spacing: 2px; }
-        label { display: block; text-align: left; font-size: 0.55rem; color: #888; text-transform: uppercase; margin: 10px 0 5px 0; }
+
+        /* UI Modes */
+        .cooper-mode { border-color: var(--neon-blue); box-shadow: 0 0 20px var(--neon-blue); }
+        .brand-mode { border-color: var(--neon-pink); box-shadow: 0 0 20px var(--neon-pink); color: var(--neon-pink); }
+
+        h1 { font-size: 1.4rem; letter-spacing: 8px; margin: 0; text-align: center; }
+        .tars-box { font-size: 0.65rem; color: var(--terminal-green); border: 1px solid var(--terminal-green); padding: 5px; margin: 10px 0; }
+        
         input, select {
-            width: 100%; padding: 10px; background: rgba(0,0,0,0.8);
-            border: 1px solid #444; color: var(--accent); font-size: 0.85rem; margin-bottom: 5px;
+            width: 100%; padding: 10px; background: #000;
+            border: 1px solid inherit; color: inherit; margin: 10px 0;
+            font-family: inherit; outline: none;
         }
-        .result-box { margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.6); border: 1px solid #222; }
-        #millerTime { font-size: 2rem; color: #fff; display: block; font-weight: bold; margin: 5px 0; }
+
         .btn-mission {
-            background: var(--accent); color: #000; border: none; padding: 15px;
-            font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%;
+            background: var(--neon-pink); color: #fff;
+            border: none; padding: 15px; width: 100%; cursor: pointer;
+            font-weight: bold; margin-bottom: 20px; font-family: inherit;
         }
-        .ticker-group { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px solid #222; }
-        .ticker-val { display: block; font-size: 0.9rem; color: var(--danger); font-weight: bold; }
-        .ticker-label { font-size: 0.5rem; color: #666; text-transform: uppercase; }
-        #messageLog { height: 35px; margin-top: 10px; font-size: 0.7rem; color: #eee; font-style: italic; }
+
+        .ticker-group { display: flex; justify-content: space-around; border-top: 1px solid; padding-top: 15px; }
+        .ticker-val { font-size: 1.2rem; font-weight: bold; }
+
+        #millerTime { font-size: 2.2rem; color: #fff; margin: 10px 0; display: block; }
+        #fuelFill { width: 100%; height: 5px; background: var(--terminal-green); transition: 0.5s; }
+        
+        #transmission { 
+            height: 40px; font-size: 0.75rem; font-style: italic; 
+            color: #fff; margin-top: 15px; border-left: 2px solid var(--neon-pink); padding-left: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="wave" id="mountainWave"></div>
+
+    <div class="wave-container" id="waveBox">
+        <div class="liquid"></div>
+        <div class="liquid"></div>
+    </div>
+
     <div class="container" id="mainCard">
-        <div class="gargantua"><div class="accretion-disk"></div></div>
-        <h1>MILLER'S TRACKER</h1>
-        <p class="subtitle">GRAVITATIONAL TIME DILATION: 61,320X</p>
-        <button class="btn-mission" id="startBtn" onclick="initiateMission()">Initiate Landing Sequence</button>
+        <div style="display: flex; justify-content: space-between; font-size: 0.6rem;">
+            <span>[ SYSTEM_ACTIVE ]</span>
+            <span id="modeToggle" style="cursor:pointer; color: var(--neon-pink);" onclick="toggleMode()">SWITCH_TO_BRAND_MODE</span>
+        </div>
+
+        <h1 id="headerTitle">MILLER_LINK</h1>
         
-        <label>Activity Name</label>
-        <input type="text" id="customTask" placeholder="e.g. Brushing Teeth" oninput="calculate()">
+        <div class="tars-box" id="tarsDisplay">TARS: Honesty set to 90%. Awaiting mission parameters.</div>
         
-        <label>Time on Earth (Minutes)</label>
-        <select id="taskSelect" onchange="updateFromPreset()">
-            <option value="custom">-- Manual Input --</option>
-            <option value="15">Coffee Break (15m)</option>
-            <option value="480">8hr Work Day (480m)</option>
-            <option value="1440">Full Earth Day (1440m)</option>
-        </select>
-        <input type="number" id="earthInput" placeholder="Enter minutes..." oninput="calculate()">
-        
+        <button class="btn-mission" id="startBtn" onclick="initiateMission()">INITIALIZE LANDING</button>
+
+        <label style="font-size: 0.6rem;">TARGET_OBJECTIVE</label>
+        <input type="text" id="customTask" placeholder="TYPE_ACTIVITY..." oninput="calculate()">
+
+        <label style="font-size: 0.6rem;">EARTH_TIME_MINS</label>
+        <input type="number" id="earthInput" placeholder="000" oninput="calculate()">
+
         <div class="result-box">
-            <div id="activityTag">Awaiting Mission...</div>
-            <label>Time on Miller's</label>
             <span id="millerTime">0.0000s</span>
+            <div style="background: #222; height: 5px; margin: 5px 0;"><div id="fuelFill"></div></div>
+            <p style="font-size: 0.5rem; text-align: left;">RESOURCES: <span id="fuelPct">100</span>%</p>
+            
             <div class="ticker-group">
-                <div class="ticker-item" style="flex:1"><span class="ticker-val" id="dayCounter">0</span><span class="ticker-label">Days Lost</span></div>
-                <div class="ticker-item" style="flex:1"><span class="ticker-val" id="yearCounter">0.00</span><span class="ticker-label">Years Lost</span></div>
+                <div class="ticker-item"><span class="ticker-val" id="dayCounter">0</span><br><span style="font-size:0.5rem">DAYS_LOST</span></div>
+                <div class="ticker-item"><span class="ticker-val" id="yearCounter">0.00</span><br><span style="font-size:0.5rem">YEARS_LOST</span></div>
             </div>
-            <div id="messageLog">Comms Offline</div>
+            
+            <div id="transmission">> INCOMING: STANDBY...</div>
         </div>
     </div>
 
     <script>
         const RATIO = 61320;
-        let audioCtx;
-        const messages = ["Today's my birthday...", "I'm the same age now as you.", "Grandpa died today.", "Dust is getting worse.", "I'm letting you go.", "Brand is waiting."];
-        let earthDays = 0, lastYearMark = 0, waveHeight = 0;
+        let audioCtx, earthDays = 0, lastYearMark = 0, waveHeight = 0, fuel = 100, isBrand = false;
 
-        // PERCUSSIVE MECHANICAL CLICK GENERATOR
-        function playMillerClick() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+        const murphQuotes = [
+            "Today's my birthday...", "I'm the same age now as you.", "You were gone a long time.",
+            "Grandpa died today.", "Dust is getting worse.", "I'm letting you go, Dad."
+        ];
 
-            const bufferSize = audioCtx.sampleRate * 0.05; // 50ms burst
-            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
+        const tarsQuotes = [
+            "TARS: Plenty of slave labor left.", "TARS: I have a cue light I can use.",
+            "TARS: Setting humor to 75%.", "TARS: See you in the next life, Cooper."
+        ];
 
-            // Create white noise burst for a percussive "click"
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = Math.random() * 2 - 1;
+        function toggleMode() {
+            isBrand = !isBrand;
+            const card = document.getElementById('mainCard');
+            const toggle = document.getElementById('modeToggle');
+            if(isBrand) {
+                card.className = "container brand-mode";
+                toggle.innerText = "SWITCH_TO_COOPER_MODE";
+                document.getElementById('headerTitle').innerText = "DATA_RECOVERY";
+            } else {
+                card.className = "container cooper-mode";
+                toggle.innerText = "SWITCH_TO_BRAND_MODE";
+                document.getElementById('headerTitle').innerText = "MILLER_LINK";
             }
+        }
 
+        function playClick() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const noise = audioCtx.createBufferSource();
+            const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.02, audioCtx.sampleRate);
+            for (let i = 0; i < buffer.length; i++) buffer.getChannelData(0)[i] = Math.random() * 2 - 1;
             noise.buffer = buffer;
-
             const filter = audioCtx.createBiquadFilter();
-            filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
-
-            const envelope = audioCtx.createGain();
-            envelope.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            envelope.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
-
-            noise.connect(filter);
-            filter.connect(envelope);
-            envelope.connect(audioCtx.destination);
-
+            filter.type = 'highpass'; filter.frequency.value = 1000;
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.02);
+            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
             noise.start();
         }
 
         function initiateMission() {
-            // Force start audio context on click
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             document.getElementById('startBtn').style.display = 'none';
-            
-            // Interval: 1.25 seconds (Cinematic Day-Tick)
             setInterval(() => {
-                playMillerClick(); 
+                playClick();
                 earthDays++;
                 const years = (earthDays / 365.25);
                 document.getElementById('dayCounter').innerText = earthDays;
                 document.getElementById('yearCounter').innerText = years.toFixed(2);
                 
-                if (years >= 10) document.getElementById('mainCard').classList.add('panic-active');
-                if (Math.floor(years) > lastYearMark) {
-                    lastYearMark = Math.floor(years);
-                    document.getElementById('messageLog').innerText = `"${messages[Math.floor(Math.random() * messages.length)]}"`;
-                }
-                waveHeight += 0.85;
-                if (waveHeight > 90) waveHeight = 90;
-                document.getElementById('mountainWave').style.height = waveHeight + 'vh';
-            }, 1250); 
-        }
+                fuel -= 0.05; 
+                document.getElementById('fuelFill').style.width = Math.max(0, fuel) + "%";
+                document.getElementById('fuelPct').innerText = Math.max(0, Math.floor(fuel));
 
-        function updateFromPreset() {
-            const val = document.getElementById('taskSelect').value;
-            if (val !== "custom") { document.getElementById('earthInput').value = val; calculate(); }
+                waveHeight += 0.4;
+                document.getElementById('waveBox').style.height = Math.min(waveHeight, 100) + "vh";
+
+                if(Math.floor(years) > lastYearMark) {
+                    lastYearMark = Math.floor(years);
+                    document.getElementById('transmission').innerText = "> MURPH: " + murphQuotes[Math.floor(Math.random()*murphQuotes.length)];
+                    document.getElementById('tarsDisplay').innerText = tarsQuotes[Math.floor(Math.random()*tarsQuotes.length)];
+                }
+            }, 1250);
         }
 
         function calculate() {
             const mins = document.getElementById('earthInput').value;
-            const task = document.getElementById('customTask').value || "Current Task";
-            document.getElementById('activityTag').innerText = task;
-            if (!mins || mins <= 0) { document.getElementById('millerTime').innerText = "0.0000s"; return; }
+            const card = document.getElementById('mainCard');
+            if (!mins || mins <= 0) return;
+            
+            // Gravity Shaker: The more time you enter, the harder it shakes
+            const intensity = Math.min(mins / 1000, 10);
+            card.style.transform = `translate(${Math.random()*intensity}px, ${Math.random()*intensity}px)`;
+
             const millerSecs = (mins / (RATIO * 60)) * 3600;
             document.getElementById('millerTime').innerText = millerSecs < 60 ? millerSecs.toFixed(4) + "s" : (millerSecs / 60).toFixed(2) + "m";
         }
