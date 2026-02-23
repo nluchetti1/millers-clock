@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miller's Planet | Time Dilation</title>
+    <style>
+        :root { 
+            --accent: #4cc9f0; 
+            --danger: #ff4d4d;
+            --bg: #05070a; 
+            --card-bg: rgba(10, 12, 18, 0.9);
+        }
+        body {
+            background-color: var(--bg);
+            color: #e0e0e0;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* The Mountain Wave */
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0vh; 
+            background: linear-gradient(to top, #1a3a4a 0%, #0a1e29 70%, transparent 100%);
+            transition: height 1.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1;
+            border-top: 3px solid rgba(76, 201, 240, 0.5);
+            opacity: 0.6;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 2px;
+            border: 1px solid #333;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(0,0,0,1);
+            width: 90%;
+            max-width: 480px;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 { color: var(--accent); letter-spacing: 6px; text-transform: uppercase; margin: 0; font-size: 1.4rem; }
+        .subtitle { font-size: 0.7rem; color: #555; margin-bottom: 25px; letter-spacing: 2px; }
+        
+        label { display: block; text-align: left; font-size: 0.6rem; color: #888; text-transform: uppercase; margin: 15px 0 5px 0; }
+        
+        select, input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0,0,0,0.8);
+            border: 1px solid #444;
+            color: var(--accent);
+            border-radius: 0;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(0,0,0,0.6);
+            border: 1px solid #222;
+        }
+
+        #millerTime {
+            font-size: 2.2rem;
+            color: #fff;
+            display: block;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+
+        .btn-mission {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            width: 100%;
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+        .btn-mission:hover { background: var(--accent); color: #000; }
+
+        .ticker-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #222;
+        }
+
+        .ticker-item { flex: 1; }
+        .ticker-val { display: block; font-size: 1rem; color: var(--danger); font-weight: bold; }
+        .ticker-label { font-size: 0.55rem; color: #666; text-transform: uppercase; }
+
+        #messageLog {
+            height: 40px;
+            margin-top: 15px;
+            font-size: 0.75rem;
+            color: #fff;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 1s;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        #status { font-size: 0.6rem; color: var(--accent); margin-top: 20px; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+    <div class="wave" id="mountainWave"></div>
+
+    <div class="container">
+        <h1>GARGANTUA SYSTEM</h1>
+        <p class="subtitle">LOCAL TIME DILATION: 61,320x</p>
+        
+        <button class="btn-mission" id="startBtn" onclick="initiateMission()">Initiate Landing Sequence</button>
+
+        <label>Earth Activity Presets</label>
+        <select id="taskSelect" onchange="updateFromPreset()">
+            <option value="custom">-- MANUAL OVERRIDE --</option>
+            <option value="2">Brush Teeth (2m)</option>
+            <option value="15">Coffee Break (15m)</option>
+            <option value="60">1 Hour Commute (60m)</option>
+            <option value="480">8-Hour Work/Sleep (480m)</option>
+            <option value="1440">One Earth Day (1,440m)</option>
+            <option value="525600">One Earth Year (525,600m)</option>
+        </select>
+
+        <label>Earth Minutes Spent</label>
+        <input type="number" id="earthInput" placeholder="0" oninput="calculate()">
+
+        <div class="result-box">
+            <label>Miller's Planet Equivalent</label>
+            <span id="millerTime">0.0000s</span>
+            
+            <div class="ticker-group">
+                <div class="ticker-item">
+                    <span class="ticker-val" id="dayCounter">0</span>
+                    <span class="ticker-label">Days Lost</span>
+                </div>
+                <div class="ticker-item">
+                    <span class="ticker-val" id="yearCounter">0.00</span>
+                    <span class="ticker-label">Years Lost</span>
+                </div>
+            </div>
+            <div id="messageLog">Awaiting comms...</div>
+        </div>
+        
+        <div id="status">SENSOR STATUS: STANDBY</div>
+    </div>
+
+    <script>
+        const RATIO = 61320; 
+        const tickSound = new Audio('https://www.soundjay.com/buttons/button-20.mp3');
+        const messages = [
+            "Today's my birthday. And it's a special one...",
+            "I'm the same age now as you were when you left.",
+            "You were gone a long time. I thought you weren't coming back.",
+            "Brand... she's waiting. Don't take too long.",
+            "Grandpa died today. We buried him in the back lot.",
+            "The dust is getting worse. We're leaving the farm.",
+            "I'm letting you go, Dad.",
+            "It's been years. Do you even know how long it's been?"
+        ];
+
+        let earthDays = 0;
+        let lastYearMark = 0;
+        let waveHeight = 0;
+
+        function initiateMission() {
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('status').innerText = "DATA FEED ACTIVE: 1 TICK = 24H EARTH TIME";
+            
+            setInterval(() => {
+                tickSound.play();
+                earthDays++;
+                
+                const years = (earthDays / 365.25);
+                document.getElementById('dayCounter').innerText = earthDays;
+                document.getElementById('yearCounter').innerText = years.toFixed(2);
+                
+                // Trigger Message from Home every Earth Year
+                if (Math.floor(years) > lastYearMark) {
+                    lastYearMark = Math.floor(years);
+                    displayMessage();
+                }
+
+                waveHeight += 0.8; 
+                if (waveHeight > 85) waveHeight = 85; 
+                document.getElementById('mountainWave').style.height = waveHeight + 'vh';
+            }, 1250);
+        }
+
+        function displayMessage() {
+            const log = document.getElementById('messageLog');
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+            log.style.opacity = 0;
+            setTimeout(() => {
+                log.innerText = `"${randomMsg}"`;
+                log.style.opacity = 1;
+            }, 500);
+        }
+
+        function updateFromPreset() {
+            const val = document.getElementById('taskSelect').value;
+            if (val !== "custom") {
+                document.getElementById('earthInput').value = val;
+                calculate();
+            }
+        }
+
+        function calculate() {
+            const mins = document.getElementById('earthInput').value;
+            const display = document.getElementById('millerTime');
+            if (!mins || mins <= 0) { display.innerText = "0.0000s"; return; }
+
+            const millerSecs = (mins / (RATIO * 60)) * 3600;
+
+            if (millerSecs < 60) {
+                display.innerText = millerSecs.toFixed(4) + "s";
+            } else if (millerSecs < 3600) {
+                display.innerText = (millerSecs / 60).toFixed(2) + "m";
+            } else {
+                display.innerText = (millerSecs / 3600).toFixed(2) + "h";
+            }
+        }
+    </script>
+</body>
+</html>
