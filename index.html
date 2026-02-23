@@ -69,8 +69,10 @@
         <h1>MILLER'S TRACKER</h1>
         <p class="subtitle">GRAVITATIONAL TIME DILATION: 61,320X</p>
         <button class="btn-mission" id="startBtn" onclick="initiateMission()">Initiate Landing Sequence</button>
+        
         <label>Activity Name</label>
         <input type="text" id="customTask" placeholder="e.g. Brushing Teeth" oninput="calculate()">
+        
         <label>Time on Earth (Minutes)</label>
         <select id="taskSelect" onchange="updateFromPreset()">
             <option value="custom">-- Manual Input --</option>
@@ -79,6 +81,7 @@
             <option value="1440">Full Earth Day (1440m)</option>
         </select>
         <input type="number" id="earthInput" placeholder="Enter minutes..." oninput="calculate()">
+        
         <div class="result-box">
             <div id="activityTag">Awaiting Mission...</div>
             <label>Time on Miller's</label>
@@ -93,38 +96,55 @@
 
     <script>
         const RATIO = 61320;
-        // This is a Base64 string of a sharp mechanical click. No external file needed!
-        const clickData = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
-        const clickSound = new Audio(clickData);
-        
-        // Alternative: If the browser rejects the empty WAV, we use the AudioContext Beep
-        function playClick() {
-            try {
-                const actx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = actx.createOscillator();
-                const gain = actx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, actx.currentTime);
-                gain.gain.setValueAtTime(0.2, actx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.05);
-                osc.connect(gain);
-                gain.connect(actx.destination);
-                osc.start();
-                osc.stop(actx.currentTime + 0.05);
-            } catch(e) { console.log("Audio Error"); }
-        }
-
+        let audioCtx;
         const messages = ["Today's my birthday...", "I'm the same age now as you.", "Grandpa died today.", "Dust is getting worse.", "I'm letting you go.", "Brand is waiting."];
         let earthDays = 0, lastYearMark = 0, waveHeight = 0;
 
+        // PERCUSSIVE MECHANICAL CLICK GENERATOR
+        function playMillerClick() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const bufferSize = audioCtx.sampleRate * 0.05; // 50ms burst
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // Create white noise burst for a percussive "click"
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+
+            const envelope = audioCtx.createGain();
+            envelope.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            envelope.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+
+            noise.connect(filter);
+            filter.connect(envelope);
+            envelope.connect(audioCtx.destination);
+
+            noise.start();
+        }
+
         function initiateMission() {
+            // Force start audio context on click
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             document.getElementById('startBtn').style.display = 'none';
+            
+            // Interval: 1.25 seconds (Cinematic Day-Tick)
             setInterval(() => {
-                playClick(); // This is the "Click" - 1.25s interval
+                playMillerClick(); 
                 earthDays++;
                 const years = (earthDays / 365.25);
                 document.getElementById('dayCounter').innerText = earthDays;
                 document.getElementById('yearCounter').innerText = years.toFixed(2);
+                
                 if (years >= 10) document.getElementById('mainCard').classList.add('panic-active');
                 if (Math.floor(years) > lastYearMark) {
                     lastYearMark = Math.floor(years);
