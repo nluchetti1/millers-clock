@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GARGANTUA_OS // V.17</title>
+    <title>GARGANTUA_OS // V.18</title>
     <style>
         :root { 
             --neon-blue: #00f3ff; --neon-pink: #ff0055; --terminal-green: #00ff41; --bg: #020205; 
@@ -17,7 +17,7 @@
             overflow: hidden; position: relative;
         }
 
-        /* Wave and Scanlines */
+        /* Scanlines */
         body::before {
             content: " "; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
@@ -55,17 +55,29 @@
         }
 
         #gameArea {
-            margin-top: 10px; border: 1px dashed #444; height: 120px; position: relative;
+            margin-top: 10px; border: 1px dashed #444; height: 100px; position: relative;
             background: #000; overflow: hidden; touch-action: none;
         }
+        
+        /* Ship now points Left (toward safe zone) */
         #ship {
-            position: absolute; left: 20px; top: 40%; width: 24px; height: 18px;
-            background: #fff; clip-path: polygon(0 40%, 100% 0, 70% 50%, 100% 100%, 0 60%);
-            transition: top 0.1s ease-out;
+            position: absolute; left: 40%; top: 40%; width: 24px; height: 18px;
+            background: #fff; clip-path: polygon(100% 40%, 0 0, 30% 50%, 0 100%, 100% 60%);
+            transition: left 0.1s ease-out;
+            z-index: 5;
         }
+
+        /* Safe Zone is now on the Left side */
         .safe-zone {
-            position: absolute; right: 0; top: 25%; height: 40%; width: 40px;
-            background: rgba(0, 255, 65, 0.2); border-left: 2px solid var(--terminal-green);
+            position: absolute; left: 0; top: 0; height: 100%; width: 30%;
+            background: rgba(0, 255, 65, 0.15); border-right: 2px solid var(--terminal-green);
+        }
+
+        /* Gravity Well on the Right */
+        .gravity-well {
+            position: absolute; right: 0; top: 0; height: 100%; width: 10%;
+            background: linear-gradient(90deg, transparent, var(--neon-pink));
+            opacity: 0.3;
         }
 
         input {
@@ -86,16 +98,16 @@
     <div class="wave-container" id="waveBox"><div class="liquid"></div></div>
 
     <div class="container" id="mainCard">
-        <div id="warningHeader">CRITICAL: GRAVITY WELL PENETRATION</div>
+        <div id="warningHeader">CRITICAL: GRAVITATIONAL PULL DETECTED</div>
         
         <h1 style="font-size: 1rem; text-align: center; letter-spacing: 5px;">MILLER_LINK</h1>
-        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Establishing link... Tap the scanner below to pulse."</div>
+        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Gravity is pulling us right. Thrust left to stay in the green."</div>
         
         <button class="btn-mission" id="startBtn" onclick="initiateMission()">INITIATE LANDING</button>
 
         <div id="ui-elements" style="display:none">
             <label style="font-size: 0.5rem;">[ OBJECTIVE ]</label>
-            <input type="text" id="customTask" placeholder="TYPE HERE..." oninput="calculate()">
+            <input type="text" id="customTask" placeholder="SCANNING..." oninput="calculate()">
             
             <label style="font-size: 0.5rem;">[ EARTH MINUTES ]</label>
             <input type="number" id="earthInput" placeholder="0" oninput="calculate()">
@@ -114,8 +126,9 @@
 
                 <div id="gameArea">
                     <div class="safe-zone"></div>
+                    <div class="gravity-well"></div>
                     <div id="ship"></div>
-                    <div style="position:absolute; bottom:5px; width:100%; text-align:center; font-size:0.4rem; color:var(--neon-blue); opacity:0.6;">TAP HERE TO THRUST</div>
+                    <div style="position:absolute; bottom:5px; width:100%; text-align:center; font-size:0.4rem; color:var(--neon-blue); opacity:0.6;">TAP TO THRUST LEFT</div>
                 </div>
 
                 <div id="transmission">> COMMS_OFFLINE</div>
@@ -126,7 +139,7 @@
     <script>
         const RATIO = 61320;
         let audioCtx, earthDays = 0, fuel = 100, missionActive = false;
-        let shipPos = 40, gravity = 3, isDocking = false;
+        let shipX = 40, pullStrength = 3.5; // Starts in middle, drifts right
 
         const crewQuotes = [
             "COOPER: This little maneuver's gonna cost us 51 years!",
@@ -150,19 +163,18 @@
             o.start(); o.stop(audioCtx.currentTime + 0.03);
         }
 
-        // THRUST ONLY HAPPENS IN THE GAME AREA
         const gameArea = document.getElementById('gameArea');
         
-        function thrust(e) {
+        function thrustLeft(e) {
             if (!missionActive) return;
             e.preventDefault();
-            shipPos = Math.max(0, shipPos - 15); // Direct jump
-            document.getElementById('ship').style.top = shipPos + "%";
+            shipX = Math.max(0, shipX - 12); // Pulse move Left
+            document.getElementById('ship').style.left = shipX + "%";
             playSound(1800);
         }
 
-        gameArea.addEventListener('touchstart', thrust, {passive: false});
-        gameArea.addEventListener('mousedown', thrust);
+        gameArea.addEventListener('touchstart', thrustLeft, {passive: false});
+        gameArea.addEventListener('mousedown', thrustLeft);
 
         function initiateMission() {
             missionActive = true;
@@ -172,12 +184,13 @@
             setInterval(() => {
                 if (fuel <= 0) return;
 
-                // Natural Gravity
-                shipPos = Math.min(92, shipPos + gravity);
-                document.getElementById('ship').style.top = shipPos + "%";
+                // Gravitational Pull to the Right
+                shipX = Math.min(94, shipX + pullStrength);
+                document.getElementById('ship').style.left = shipX + "%";
 
-                const isSafe = (shipPos >= 25 && shipPos <= 65);
-                let dilation = isSafe ? 1 : 10;
+                // Safe Zone is the first 30% of the bar
+                const isSafe = (shipX <= 30);
+                let dilation = isSafe ? 1 : 12; // Heavy penalty for being pulled toward the well
                 
                 document.getElementById('warningHeader').style.display = isSafe ? 'none' : 'block';
 
@@ -196,7 +209,7 @@
                 document.getElementById('waveBox').style.height = Math.min((earthDays/300)*100, 100) + "vh";
 
                 if (fuel <= 0) {
-                    document.getElementById('tarsDisplay').innerText = "TARS: Fuel exhausted.";
+                    document.getElementById('tarsDisplay').innerText = "TARS: Signal lost in Gargantua.";
                     document.getElementById('mainCard').style.filter = "grayscale(1) brightness(0.2)";
                 }
             }, 1250);
