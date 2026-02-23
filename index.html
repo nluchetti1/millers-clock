@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GARGANTUA_OS // V.25</title>
+    <title>GARGANTUA_OS // V.29</title>
     <style>
         :root { 
             --neon-blue: #00f3ff; --neon-pink: #ff0055; --terminal-green: #00ff41; 
@@ -15,24 +15,25 @@
             font-family: 'Courier New', monospace;
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; min-height: 100vh; margin: 0;
-            overflow: hidden; perspective: 1000px;
-        }
-
-        /* 3D Tesseract Unfolding Effect */
-        .tesseract-warp {
-            animation: unfold 4s forwards cubic-bezier(0.45, 0.05, 0.55, 0.95);
-        }
-
-        @keyframes unfold {
-            0% { transform: rotateY(0deg) rotateX(0deg) scale(1); }
-            50% { transform: rotateY(45deg) rotateX(-20deg) scale(0.8); border-color: var(--tesseract-gold); }
-            100% { transform: rotateY(0deg) rotateX(0deg) scale(1.5); opacity: 0; filter: brightness(3); }
+            overflow: hidden; perspective: 1200px;
         }
 
         .container {
             background: rgba(0, 0, 0, 0.98); padding: 1.2rem; 
             border: 1px solid var(--neon-blue); width: 88%; max-width: 450px; z-index: 10;
-            transition: border 1s, box-shadow 1s;
+            transition: all 0.5s ease;
+        }
+
+        /* Tesseract Transition */
+        .tesseract-warp {
+            animation: tesseract-unfold 5s forwards;
+            pointer-events: none;
+        }
+
+        @keyframes tesseract-unfold {
+            0% { transform: translateZ(0) rotateY(0); }
+            50% { transform: translateZ(-300px) rotateX(45deg); filter: hue-rotate(180deg) brightness(3); }
+            100% { transform: translateZ(1000px) rotateY(-90deg); opacity: 0; }
         }
 
         #gameArea {
@@ -48,11 +49,24 @@
         }
 
         .saboteur {
-            position: absolute; width: 26px; height: 26px;
-            background: var(--neon-pink); border-radius: 50%;
-            box-shadow: 0 0 15px var(--neon-pink); color: #fff;
-            font-size: 7px; font-weight: bold; display: flex; 
-            align-items: center; justify-content: center; border: 2px solid #fff;
+            position: absolute; width: 30px; height: 30px;
+            background-color: #333;
+            background-image: url('https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/Matt_Damon_as_Dr._Mann.jpg/220px-Matt_Damon_as_Dr._Mann.jpg');
+            background-size: cover;
+            border-radius: 50%; border: 2px solid var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+            animation: mann-glitch 0.2s infinite;
+        }
+
+        @keyframes mann-glitch {
+            0% { transform: scale(1); filter: contrast(1); }
+            50% { transform: scale(1.1); filter: contrast(2) invert(0.1); }
+            100% { transform: scale(1); filter: contrast(1); }
+        }
+
+        input {
+            width: 100%; padding: 8px; background: #000; border: 1px solid var(--neon-blue); 
+            color: var(--neon-blue); margin-bottom: 5px; font-family: inherit; font-size: 0.8rem;
         }
 
         #winScreen {
@@ -61,53 +75,70 @@
             z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
             color: #000; text-align: center; font-weight: bold;
         }
+
+        #warningHeader {
+            background: var(--neon-pink); color: #fff; font-size: 0.65rem; text-align: center; 
+            display: none; padding: 5px; margin-bottom: 8px; font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
     <div id="winScreen">
-        <h1 style="font-size: 3rem; margin:0;">STAY</h1>
-        <p style="letter-spacing: 2px;">QUANTUM DATA TRANSMITTED</p>
-        <p style="font-size: 0.8rem; margin-top: 20px;">Humanity has a new home.</p>
-        <button onclick="location.reload()" style="padding:15px 30px; background:#000; color:#fff; border:none; margin-top:30px; font-family:inherit; font-weight:bold; cursor:pointer;">RE-ENTER WORMHOLE</button>
+        <h1 style="font-size: 3rem; margin: 0;">S T A Y</h1>
+        <p>GRAVITY IS THE KEY. <br> QUANTUM DATA TRANSMITTED. <br> HUMANITY IS SAVED.</p>
+        <button onclick="location.reload()" style="padding:15px 30px; background:#000; color:#fff; border:none; margin-top:20px; cursor:pointer; font-family:inherit; font-weight:bold;">RE-ENTER SYSTEM</button>
     </div>
 
     <div class="container" id="mainCard">
-        <h1 id="headerTitle" style="font-size: 0.85rem; text-align: center; letter-spacing: 3px;">GARGANTUA_OS_V25</h1>
+        <div id="warningHeader">CRITICAL DILATION // HULL BREACH IMMINENT</div>
+        <h1 style="font-size: 0.9rem; text-align: center; letter-spacing: 4px;">GARGANTUA_OS_V29</h1>
         
-        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Data extraction in progress. Avoid Mann's sabotage."</div>
+        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Objective: 40 Years. Use the horizon to sync data."</div>
         
-        <button class="btn-mission" id="startBtn" onclick="initiateMission()" style="background:var(--neon-pink); color:#fff; border:none; padding:15px; width:100%; font-weight:bold; cursor:pointer; font-family:inherit;">INITIATE MISSION</button>
+        <button class="btn-mission" id="startBtn" onclick="initiateMission()" style="background:var(--neon-pink); color:#fff; border:none; padding:12px; width:100%; font-weight:bold; cursor:pointer;">ENGAGE MISSION</button>
 
         <div id="ui-elements" style="display:none">
-            <div style="width: 100%; height: 4px; background: #333;"><div id="hullFill" style="width: 100%; height: 100%; background: var(--terminal-green); transition: 0.3s;"></div></div>
-            <p style="font-size:0.4rem; margin:4px 0;">HULL_STABILITY: <span id="hullPct">100</span>%</p>
+            <input type="text" id="objName" placeholder="MISSION_OBJECTIVE">
+            <input type="number" id="earthInput" placeholder="EARTH_MINS" oninput="calculate()">
+
+            <div style="width: 100%; height: 5px; background: #222; margin-top:10px;"><div id="hullFill" style="width: 100%; height: 100%; background: var(--terminal-green); transition: 0.2s;"></div></div>
+            <p style="font-size:0.4rem; margin:2px 0;">HULL_INTEGRITY: <span id="hullPct">100</span>%</p>
 
             <div class="result-box">
                 <span id="millerTime" style="font-size: 1.8rem; color: #fff; display: block; text-align: center;">0.0000s</span>
-                <div style="background: #111; height: 4px; margin: 8px 0;"><div id="fuelFill" style="width: 100%; height: 100%; background: var(--terminal-green);"></div></div>
                 
-                <div style="display:flex; justify-content:space-around; text-align:center;">
-                    <div><span id="dayCounter" style="font-weight:bold;">0</span><br><span style="font-size:0.45rem">DAYS</span></div>
-                    <div><span id="yearCounter" style="font-size:1.1rem; font-weight:bold;">0.00</span><br><span style="font-size:0.45rem">YEARS</span></div>
+                <div style="display:flex; justify-content:space-around; text-align:center; margin: 10px 0;">
+                    <div><span id="dayCounter" style="font-weight:bold;">0</span><br><span style="font-size:0.4rem">DAYS</span></div>
+                    <div><span id="yearCounter" style="font-size:1.1rem; font-weight:bold;">0.00</span><br><span style="font-size:0.4rem">YEARS</span></div>
                 </div>
 
                 <div id="gameArea" onclick="handleInput(event)" ontouchstart="handleInput(event)">
+                    <div style="position:absolute; left:0; top:0; height:100%; width:20%; background:rgba(0,255,65,0.1); border-right:1px solid var(--terminal-green);"></div>
                     <div id="ship"></div>
-                    <div style="position:absolute; left:0; top:0; height:100%; width:20%; background:rgba(0,255,65,0.05); border-right:1px solid var(--terminal-green);"></div>
                 </div>
-                <div id="transmission" style="font-size:0.6rem; margin-top:10px; border-left:2px solid var(--neon-pink); padding-left:10px;">> SIGNAL_STABLE</div>
+
+                <div id="transmission" style="font-size:0.6rem; color:#ccc; margin-top:10px; border-left:2px solid var(--neon-pink); padding-left:10px;">> STANDBY...</div>
             </div>
         </div>
     </div>
 
     <script>
         const RATIO = 61320;
-        let audioCtx, earthDays = 0, fuel = 100, hull = 100, missionActive = false;
+        let audioCtx, days = 0, hull = 100, missionActive = false;
         let shipX = 30, shipY = 45; 
         const saboteurs = [];
 
-        function playSound(p, d=0.03) {
+        const quotes = [
+            "COOPER: This little maneuver's gonna cost us 51 years!",
+            "DR. MANN: This is a moment of self-preservation!",
+            "MURPH: Don't let me leave, Murph!",
+            "BRAND: Love transcends time and space.",
+            "TARS: Honesty 90%. Humor 75%.",
+            "ROMILLY: I've waited years. I've studied the anomaly."
+        ];
+
+        function playSound(p, d=0.04) {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const o = audioCtx.createOscillator();
@@ -123,10 +154,10 @@
             if (!missionActive) return;
             e.preventDefault();
             const rect = gameArea.getBoundingClientRect();
-            const touchX = ((e.clientX || e.touches[0].clientX) - rect.left) / rect.width * 100;
-            const touchY = ((e.clientY || e.touches[0].clientY) - rect.top) / rect.height * 100;
-            if (touchX < shipX) shipX -= 12; else shipX += 4;
-            if (touchY < shipY) shipY -= 15; else shipY += 15;
+            const tx = ((e.clientX || (e.touches ? e.touches[0].clientX : 0)) - rect.left) / rect.width * 100;
+            const ty = ((e.clientY || (e.touches ? e.touches[0].clientY : 0)) - rect.top) / rect.height * 100;
+            if (tx < shipX) shipX -= 15; else shipX += 5;
+            if (ty < shipY) shipY -= 20; else shipY += 20;
             updateShip();
             playSound(1800);
         }
@@ -143,64 +174,77 @@
             document.getElementById('startBtn').style.display = 'none';
             document.getElementById('ui-elements').style.display = 'block';
             
-            const loop = setInterval(() => {
-                if (fuel <= 0 || hull <= 0) {
-                    clearInterval(loop);
-                    document.getElementById('tarsDisplay').innerText = "TARS: Mission Failure. Gravity won.";
+            const timer = setInterval(() => {
+                if (hull <= 0) {
+                    clearInterval(timer);
+                    document.getElementById('tarsDisplay').innerText = "TARS: Mission Failure. The hull breached.";
+                    document.getElementById('mainCard').style.filter = "grayscale(1) brightness(0.2)";
                     return;
                 }
 
-                shipX = Math.min(94, shipX + 4);
+                // Gravity accelerates
+                shipX = Math.min(94, shipX + (3 + shipX/18));
                 updateShip();
 
-                let dilation = (shipX > 20) ? Math.floor(Math.pow(1.08, shipX - 20) + 1) : 1;
-                earthDays += dilation;
-                let years = (earthDays / 365.25);
+                let dilation = (shipX > 20) ? Math.floor(Math.pow(1.09, shipX - 20) + 1) : 1;
+                days += dilation;
+                let yrs = days / 365.25;
                 
-                document.getElementById('dayCounter').innerText = earthDays;
-                document.getElementById('yearCounter').innerText = years.toFixed(2);
-                
-                fuel -= 0.5;
-                document.getElementById('fuelFill').style.width = fuel + "%";
+                document.getElementById('dayCounter').innerText = days;
+                document.getElementById('yearCounter').innerText = yrs.toFixed(2);
+                document.getElementById('warningHeader').style.display = (dilation > 1) ? 'block' : 'none';
 
-                if (years >= 80) {
-                    clearInterval(loop);
-                    triggerTesseract();
+                // WIN CONDITION: 40 YEARS
+                if (yrs >= 40) {
+                    clearInterval(timer);
+                    win();
                 }
 
-                if (Math.random() > 0.7) spawnSaboteur();
+                if (Math.random() > 0.65) spawnMann();
 
                 for (let i = saboteurs.length - 1; i >= 0; i--) {
-                    let s = saboteurs[i]; s.x -= (10 + dilation * 0.5);
+                    let s = saboteurs[i]; s.x -= (12 + dilation * 0.4);
                     s.el.style.left = s.x + "%";
-                    if (Math.abs(s.x - shipX) < 7 && Math.abs(s.y - shipY) < 14) {
+                    if (Math.abs(s.x - shipX) < 8 && Math.abs(s.y - shipY) < 16) {
                         hull -= 20;
-                        shipX = Math.min(94, shipX + 30);
+                        shipX = Math.min(94, shipX + 35);
                         document.getElementById('hullFill').style.width = hull + "%";
                         document.getElementById('hullPct').innerText = hull;
                         playSound(300, 0.2); s.el.remove(); saboteurs.splice(i, 1);
-                    } else if (s.x < -10) { s.el.remove(); saboteurs.splice(i, 1); }
+                    } else if (s.x < -15) { s.el.remove(); saboteurs.splice(i, 1); }
+                }
+
+                // Heartbeat gets faster as you approach 40 years
+                const pitch = 1200 + (yrs * 15);
+                playSound(pitch, 0.05);
+
+                if (days % 15 === 0) {
+                    document.getElementById('transmission').innerText = "> " + quotes[Math.floor(Math.random()*quotes.length)];
                 }
             }, 1250);
         }
 
-        function spawnSaboteur() {
+        function spawnMann() {
             const sab = document.createElement('div');
-            sab.className = 'saboteur'; sab.innerText = 'MANN';
-            sab.style.left = '110%'; sab.style.top = Math.random() * 85 + '%';
+            sab.className = 'saboteur';
+            sab.style.left = '110%'; sab.style.top = Math.random() * 80 + '%';
             document.getElementById('gameArea').appendChild(sab);
             saboteurs.push({el: sab, x: 110, y: parseFloat(sab.style.top)});
         }
 
-        function triggerTesseract() {
+        function win() {
             missionActive = false;
-            const card = document.getElementById('mainCard');
-            card.classList.add('tesseract-warp');
-            document.getElementById('tarsDisplay').innerText = "TARS: EUREKA! DATA SENT!";
-            playSound(2200, 2);
+            document.getElementById('mainCard').classList.add('tesseract-warp');
+            playSound(2500, 4);
             setTimeout(() => {
                 document.getElementById('winScreen').style.display = 'flex';
-            }, 3500);
+            }, 4000);
+        }
+
+        function calculate() {
+            const mins = document.getElementById('earthInput').value;
+            const millerSecs = (mins / (RATIO * 60)) * 3600;
+            document.getElementById('millerTime').innerText = millerSecs < 60 ? millerSecs.toFixed(4) + "s" : (millerSecs / 60).toFixed(2) + "m";
         }
     </script>
 </body>
