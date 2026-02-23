@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GARGANTUA_OS // V.19</title>
+    <title>GARGANTUA_OS // V.22</title>
     <style>
         :root { 
-            --neon-blue: #00f3ff; --neon-pink: #ff0055; --terminal-green: #00ff41; --bg: #020205; 
+            --neon-blue: #00f3ff; --neon-pink: #ff0055; --terminal-green: #00ff41; 
+            --bg: #020000; --danger-red: #220000;
         }
         
         body {
@@ -17,21 +18,15 @@
             overflow: hidden; position: relative;
         }
 
-        .wave-container {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 0vh;
-            z-index: 0; pointer-events: none; transition: height 1.25s linear;
+        #gradientOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, #000 0%, var(--danger-red) 100%);
+            z-index: -1; opacity: 0.9;
         }
-        .liquid {
-            position: absolute; bottom: 0; left: -50%; width: 200%; height: 600px;
-            background: rgba(0, 243, 255, 0.1); border-top: 3px solid var(--neon-blue);
-            border-radius: 41%; animation: drift 7s infinite linear;
-        }
-        @keyframes drift { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .container {
-            background: rgba(5, 5, 12, 0.98); padding: 1.2rem; 
-            border: 2px solid var(--neon-blue); width: 88%; max-width: 450px; z-index: 10;
-            position: relative; box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
+            background: rgba(0, 0, 0, 0.98); padding: 1.2rem; 
+            border: 1px solid var(--neon-blue); width: 88%; max-width: 450px; z-index: 10;
         }
 
         #warningHeader {
@@ -41,67 +36,73 @@
         }
 
         #gameArea {
-            margin-top: 10px; border: 1px dashed #444; height: 120px; position: relative;
+            margin-top: 10px; border: 1px double #444; height: 160px; position: relative;
             background: #000; overflow: hidden; touch-action: none;
         }
         
         #ship {
-            position: absolute; left: 40%; top: 45%; width: 24px; height: 18px;
+            position: absolute; left: 30%; top: 45%; width: 24px; height: 18px;
             background: #fff; clip-path: polygon(100% 40%, 0 0, 30% 50%, 0 100%, 100% 60%);
             transition: left 0.1s linear, top 0.1s linear; z-index: 5;
         }
 
         .safe-zone {
-            position: absolute; left: 0; top: 0; height: 100%; width: 25%;
-            background: rgba(0, 255, 65, 0.1); border-right: 2px solid var(--terminal-green);
+            position: absolute; left: 0; top: 0; height: 100%; width: 20%;
+            background: rgba(0, 255, 65, 0.08); border-right: 1px solid var(--terminal-green);
         }
 
-        /* Saboteur Obstacle Style */
         .saboteur {
-            position: absolute; width: 20px; height: 20px;
-            background: var(--neon-pink); clip-path: circle(50% at 50% 50%);
-            box-shadow: 0 0 10px var(--neon-pink); border: 1px solid #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 8px; color: #000; font-weight: bold;
+            position: absolute; width: 22px; height: 22px;
+            background: var(--neon-pink); border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-pink); color: #000;
+            font-size: 7px; font-weight: bold; display: flex; 
+            align-items: center; justify-content: center;
         }
 
         #transmission { 
-            height: 60px; font-size: 0.65rem; color: #ccc; 
-            margin-top: 10px; border-left: 2px solid var(--neon-pink); padding-left: 10px;
-            display: flex; align-items: center; overflow: hidden;
+            height: 80px; font-size: 0.68rem; color: #eee; 
+            margin-top: 15px; border-left: 3px solid var(--neon-pink); padding-left: 12px;
+            display: flex; align-items: center; overflow: hidden; line-height: 1.4;
+            background: rgba(255, 0, 85, 0.05);
+        }
+
+        input {
+            width: 100%; padding: 8px; background: #000; border: 1px solid var(--neon-blue); 
+            color: var(--neon-blue); margin-bottom: 5px; font-family: inherit;
         }
     </style>
 </head>
 <body>
 
-    <div class="wave-container" id="waveBox"><div class="liquid"></div></div>
+    <div id="gradientOverlay"></div>
 
     <div class="container" id="mainCard">
-        <div id="warningHeader">DILATION_FACTOR: <span id="dilationDisplay">1</span>x</div>
+        <div id="warningHeader">TIME SLIPPAGE: <span id="dilationDisplay">1</span>x // THREAT LEVEL: <span id="threatLevel">NORMAL</span></div>
+        <h1 style="font-size: 0.9rem; text-align: center; letter-spacing: 4px;">GARGANTUA_OS_V22</h1>
         
-        <h1 style="font-size: 1rem; text-align: center; letter-spacing: 5px;">MILLER_LINK</h1>
-        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Saboteur detected! Dodge the Mann icons!"</div>
+        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Gravity warping threat speed. Stay left."</div>
         
-        <button class="btn-mission" id="startBtn" onclick="initiateMission()" style="background:var(--neon-pink); color:#fff; border:none; padding:15px; width:100%; font-weight:bold; font-family:inherit; margin-bottom:10px;">INITIATE LANDING</button>
+        <button class="btn-mission" id="startBtn" onclick="initiateMission()" style="background:var(--neon-pink); color:#fff; border:none; padding:15px; width:100%; font-weight:bold; cursor:pointer; font-family:inherit;">INITIATE LANDING</button>
 
         <div id="ui-elements" style="display:none">
-            <input type="number" id="earthInput" style="width:100%; padding:10px; background:#000; border:1px solid var(--neon-blue); color:var(--neon-blue); margin-bottom:10px; font-family:inherit;" placeholder="EARTH MINUTES" oninput="calculate()">
+            <input type="text" id="objName" placeholder="MISSION OBJECTIVE...">
+            <input type="number" id="earthInput" placeholder="EARTH MINUTES" oninput="calculate()">
 
             <div class="result-box">
                 <span id="millerTime" style="font-size: 1.8rem; color: #fff; display: block; text-align: center;">0.0000s</span>
-                <div style="background: #111; height: 6px; margin: 10px 0;"><div id="fuelFill" style="width: 100%; height: 100%; background: var(--terminal-green);"></div></div>
+                <div style="background: #111; height: 4px; margin: 5px 0;"><div id="fuelFill" style="width: 100%; height: 100%; background: var(--terminal-green);"></div></div>
                 
-                <div style="display:flex; justify-content:space-around; text-align:center;">
-                    <div><span id="dayCounter" style="font-size:1.1rem; font-weight:bold;">0</span><br><span style="font-size:0.4rem">DAYS_LOST</span></div>
-                    <div><span id="yearCounter" style="font-size:1.1rem; font-weight:bold;">0.00</span><br><span style="font-size:0.4rem">YEARS_LOST</span></div>
+                <div style="display:flex; justify-content:space-around; text-align:center; font-size: 0.8rem;">
+                    <div><span id="dayCounter" style="font-weight:bold;">0</span><br><span style="font-size:0.45rem">DAYS</span></div>
+                    <div><span id="yearCounter" style="font-size:1.1rem; font-weight:bold;">0.00</span><br><span style="font-size:0.45rem">YEARS</span></div>
                 </div>
 
-                <div id="gameArea">
+                <div id="gameArea" onclick="handleInput(event)" ontouchstart="handleInput(event)">
                     <div class="safe-zone"></div>
                     <div id="ship"></div>
                 </div>
 
-                <div id="transmission">> COMMS_OFFLINE</div>
+                <div id="transmission">> LINKING TO ENDURANCE...</div>
             </div>
         </div>
     </div>
@@ -109,43 +110,53 @@
     <script>
         const RATIO = 61320;
         let audioCtx, earthDays = 0, fuel = 100, missionActive = false;
-        let shipX = 40, shipY = 45; 
+        let shipX = 30, shipY = 45; 
         const saboteurs = [];
 
-        function playSound(p) {
+        const crewArchives = [
+            "COOPER: This little maneuver's gonna cost us 51 years!",
+            "BRAND: Love is the one thing that transcends time and space.",
+            "ROMILLY: I've waited years. I've studied the anomaly.",
+            "MURPH: Don't let me leave, Murph!",
+            "PROF. BRAND: Do not go gentle into that good night.",
+            "DOYLE: We are staying! We're not leaving without that data!",
+            "TARS: Honesty set to 90%. Humor set to 75%.",
+            "DR. MANN: There is a moment... your self-preservation kicks in.",
+            "CASE: We are picking up an anomaly.",
+            "PROF. BRAND: I'm not afraid of death. I'm afraid of time.",
+            "BRAND: Time is a resource. Just like oxygen and food."
+        ];
+
+        function playSound(p, d=0.03) {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const o = audioCtx.createOscillator();
             const g = audioCtx.createGain();
             o.type = 'square'; o.frequency.value = p;
             g.gain.setValueAtTime(0.04, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + d);
             o.connect(g); g.connect(audioCtx.destination);
-            o.start(); o.stop(audioCtx.currentTime + 0.03);
+            o.start(); o.stop(audioCtx.currentTime + d);
         }
 
-        const gameArea = document.getElementById('gameArea');
-        
-        function thrust(e) {
+        function handleInput(e) {
             if (!missionActive) return;
             e.preventDefault();
-            shipX = Math.max(0, shipX - 10); // Pulse Left
-            document.getElementById('ship').style.left = shipX + "%";
+            const rect = gameArea.getBoundingClientRect();
+            const touchX = ((e.clientX || e.touches[0].clientX) - rect.left) / rect.width * 100;
+            const touchY = ((e.clientY || e.touches[0].clientY) - rect.top) / rect.height * 100;
+
+            if (touchX < shipX) shipX -= 12; else shipX += 4;
+            if (touchY < shipY) shipY -= 15; else shipY += 15;
+            updateShip();
             playSound(1800);
         }
 
-        gameArea.addEventListener('touchstart', thrust, {passive: false});
-        gameArea.addEventListener('mousedown', thrust);
-
-        function spawnSaboteur() {
-            if (!missionActive) return;
-            const sab = document.createElement('div');
-            sab.className = 'saboteur';
-            sab.innerText = 'MANN';
-            sab.style.right = '-20px';
-            sab.style.top = Math.random() * 80 + '%';
-            gameArea.appendChild(sab);
-            saboteurs.push({el: sab, x: 110, y: parseFloat(sab.style.top)});
+        function updateShip() {
+            shipX = Math.max(0, Math.min(94, shipX));
+            shipY = Math.max(0, Math.min(85, shipY));
+            const s = document.getElementById('ship');
+            s.style.left = shipX + "%"; s.style.top = shipY + "%";
         }
 
         function initiateMission() {
@@ -156,52 +167,56 @@
             setInterval(() => {
                 if (fuel <= 0) return;
 
-                // Gravity Pulls Right
-                shipX = Math.min(94, shipX + 3);
-                document.getElementById('ship').style.left = shipX + "%";
+                shipX = Math.min(94, shipX + 3.8);
+                updateShip();
 
-                // EXPONENTIAL DILATION CALCULATION
-                // Dilation starts at 1x in green zone (0-25%) and increases exponentially to 50x near singularity
                 let dilation = 1;
-                if (shipX > 25) {
-                    dilation = Math.floor(Math.pow(1.05, shipX - 25) + 1);
-                }
+                if (shipX > 20) dilation = Math.floor(Math.pow(1.065, shipX - 20) + 1);
                 
-                const warn = document.getElementById('warningHeader');
+                document.getElementById('warningHeader').style.display = dilation > 1 ? 'block' : 'none';
                 document.getElementById('dilationDisplay').innerText = dilation;
-                warn.style.display = dilation > 1 ? 'block' : 'none';
+                
+                // Threat Level based on dilation/gravity
+                const threat = document.getElementById('threatLevel');
+                if (dilation > 20) { threat.innerText = "EXTREME"; threat.style.color = "var(--neon-pink)"; }
+                else if (dilation > 1) { threat.innerText = "HIGH"; threat.style.color = "yellow"; }
+                else { threat.innerText = "NORMAL"; threat.style.color = "white"; }
 
                 playSound(1200);
                 earthDays += dilation;
                 document.getElementById('dayCounter').innerText = earthDays;
                 document.getElementById('yearCounter').innerText = (earthDays / 365.25).toFixed(2);
                 
-                fuel -= 0.35; 
+                fuel -= 0.45;
                 document.getElementById('fuelFill').style.width = Math.max(0, fuel) + "%";
                 
-                // Spawn Mann every 5 ticks
-                if (earthDays % 5 === 0) spawnSaboteur();
+                if (Math.random() > 0.75) spawnSaboteur();
 
-                // Update Saboteurs
+                // MOVE SABOTEURS (Faster if dilation is higher)
+                const mannSpeed = 7 + (dilation * 0.5); // Relativistic speed increase
                 for (let i = saboteurs.length - 1; i >= 0; i--) {
-                    let s = saboteurs[i];
-                    s.x -= 8; // Move saboteur left
-                    s.el.style.right = (100 - s.x) + "%";
+                    let s = saboteurs[i]; 
+                    s.x -= mannSpeed; 
+                    s.el.style.left = s.x + "%";
                     
-                    // Collision Detection
-                    if (s.x > shipX - 5 && s.x < shipX + 5 && Math.abs(s.y - shipY) < 15) {
-                        shipX = Math.min(94, shipX + 25); // KNOCKBACK Deeper into Well
-                        playSound(400);
-                        s.el.remove();
-                        saboteurs.splice(i, 1);
-                    } else if (s.x < -10) {
-                        s.el.remove();
-                        saboteurs.splice(i, 1);
-                    }
+                    if (Math.abs(s.x - shipX) < 6 && Math.abs(s.y - shipY) < 12) {
+                        shipX = Math.min(94, shipX + 28);
+                        playSound(300, 0.15); s.el.remove(); saboteurs.splice(i, 1);
+                    } else if (s.x < -10) { s.el.remove(); saboteurs.splice(i, 1); }
                 }
 
-                document.getElementById('waveBox').style.height = Math.min((earthDays/400)*100, 100) + "vh";
+                if (earthDays % 15 === 0) {
+                    document.getElementById('transmission').innerText = "> " + crewArchives[Math.floor(Math.random()*crewArchives.length)];
+                }
             }, 1250);
+        }
+
+        function spawnSaboteur() {
+            const sab = document.createElement('div');
+            sab.className = 'saboteur'; sab.innerText = 'MANN';
+            sab.style.left = '110%'; sab.style.top = Math.random() * 85 + '%';
+            document.getElementById('gameArea').appendChild(sab);
+            saboteurs.push({el: sab, x: 110, y: parseFloat(sab.style.top)});
         }
 
         function calculate() {
