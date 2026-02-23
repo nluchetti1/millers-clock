@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GARGANTUA_OS // V.22</title>
+    <title>GARGANTUA_OS // V.23</title>
     <style>
         :root { 
             --neon-blue: #00f3ff; --neon-pink: #ff0055; --terminal-green: #00ff41; 
@@ -51,13 +51,16 @@
             background: rgba(0, 255, 65, 0.08); border-right: 1px solid var(--terminal-green);
         }
 
+        /* Saboteur: Now styled to represent Dr. Mann's flickering helmet/face */
         .saboteur {
-            position: absolute; width: 22px; height: 22px;
+            position: absolute; width: 26px; height: 26px;
             background: var(--neon-pink); border-radius: 50%;
-            box-shadow: 0 0 10px var(--neon-pink); color: #000;
+            box-shadow: 0 0 15px var(--neon-pink); color: #fff;
             font-size: 7px; font-weight: bold; display: flex; 
             align-items: center; justify-content: center;
+            border: 2px solid #fff; animation: flicker 0.2s infinite;
         }
+        @keyframes flicker { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
 
         #transmission { 
             height: 80px; font-size: 0.68rem; color: #eee; 
@@ -77,15 +80,15 @@
     <div id="gradientOverlay"></div>
 
     <div class="container" id="mainCard">
-        <div id="warningHeader">TIME SLIPPAGE: <span id="dilationDisplay">1</span>x // THREAT LEVEL: <span id="threatLevel">NORMAL</span></div>
-        <h1 style="font-size: 0.9rem; text-align: center; letter-spacing: 4px;">GARGANTUA_OS_V22</h1>
+        <div id="warningHeader">DILATION: <span id="dilationDisplay">1</span>x // THREAT: <span id="threatLevel">NORMAL</span></div>
+        <h1 style="font-size: 0.85rem; text-align: center; letter-spacing: 3px;">GARGANTUA_OS_V23 // MANN_DETECTION</h1>
         
-        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Gravity warping threat speed. Stay left."</div>
+        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Damon's digital signature detected. Speed is lethal."</div>
         
-        <button class="btn-mission" id="startBtn" onclick="initiateMission()" style="background:var(--neon-pink); color:#fff; border:none; padding:15px; width:100%; font-weight:bold; cursor:pointer; font-family:inherit;">INITIATE LANDING</button>
+        <button class="btn-mission" id="startBtn" onclick="initiateMission()" style="background:var(--neon-pink); color:#fff; border:none; padding:15px; width:100%; font-weight:bold; cursor:pointer; font-family:inherit;">ENGAGE THRUSTERS</button>
 
         <div id="ui-elements" style="display:none">
-            <input type="text" id="objName" placeholder="MISSION OBJECTIVE...">
+            <input type="text" id="objName" placeholder="MISSION DATA ENTRY...">
             <input type="number" id="earthInput" placeholder="EARTH MINUTES" oninput="calculate()">
 
             <div class="result-box">
@@ -102,7 +105,7 @@
                     <div id="ship"></div>
                 </div>
 
-                <div id="transmission">> LINKING TO ENDURANCE...</div>
+                <div id="transmission">> LINKING...</div>
             </div>
         </div>
     </div>
@@ -114,16 +117,15 @@
         const saboteurs = [];
 
         const crewArchives = [
+            "DR. MANN: There is a moment... your self-preservation kicks in.",
+            "DR. MANN: Don't judge me, Cooper. You were never tested.",
             "COOPER: This little maneuver's gonna cost us 51 years!",
-            "BRAND: Love is the one thing that transcends time and space.",
-            "ROMILLY: I've waited years. I've studied the anomaly.",
+            "BRAND: Love transcends time and space.",
+            "ROMILLY: I didn't want to sleep my life away.",
             "MURPH: Don't let me leave, Murph!",
             "PROF. BRAND: Do not go gentle into that good night.",
-            "DOYLE: We are staying! We're not leaving without that data!",
             "TARS: Honesty set to 90%. Humor set to 75%.",
-            "DR. MANN: There is a moment... your self-preservation kicks in.",
             "CASE: We are picking up an anomaly.",
-            "PROF. BRAND: I'm not afraid of death. I'm afraid of time.",
             "BRAND: Time is a resource. Just like oxygen and food."
         ];
 
@@ -167,18 +169,23 @@
             setInterval(() => {
                 if (fuel <= 0) return;
 
-                shipX = Math.min(94, shipX + 3.8);
+                shipX = Math.min(94, shipX + 4.2); // Aggressive gravity
                 updateShip();
 
                 let dilation = 1;
-                if (shipX > 20) dilation = Math.floor(Math.pow(1.065, shipX - 20) + 1);
+                if (shipX > 20) dilation = Math.floor(Math.pow(1.075, shipX - 20) + 1);
                 
                 document.getElementById('warningHeader').style.display = dilation > 1 ? 'block' : 'none';
                 document.getElementById('dilationDisplay').innerText = dilation;
                 
-                // Threat Level based on dilation/gravity
                 const threat = document.getElementById('threatLevel');
-                if (dilation > 20) { threat.innerText = "EXTREME"; threat.style.color = "var(--neon-pink)"; }
+                let spawnChance = 0.7;
+
+                if (dilation > 20) { 
+                    threat.innerText = "EXTREME"; 
+                    threat.style.color = "var(--neon-pink)"; 
+                    spawnChance = 0.95; // More Manns
+                }
                 else if (dilation > 1) { threat.innerText = "HIGH"; threat.style.color = "yellow"; }
                 else { threat.innerText = "NORMAL"; threat.style.color = "white"; }
 
@@ -187,25 +194,28 @@
                 document.getElementById('dayCounter').innerText = earthDays;
                 document.getElementById('yearCounter').innerText = (earthDays / 365.25).toFixed(2);
                 
-                fuel -= 0.45;
+                fuel -= 0.55; // Faster fuel drain
                 document.getElementById('fuelFill').style.width = Math.max(0, fuel) + "%";
                 
-                if (Math.random() > 0.75) spawnSaboteur();
+                if (Math.random() < spawnChance) {
+                    spawnSaboteur();
+                    if (dilation > 30) spawnSaboteur(); // Double spawn in extreme gravity
+                }
 
-                // MOVE SABOTEURS (Faster if dilation is higher)
-                const mannSpeed = 7 + (dilation * 0.5); // Relativistic speed increase
+                // MOVE SABOTEURS (Lethal Speed)
+                const mannSpeed = 10 + (dilation * 0.7); 
                 for (let i = saboteurs.length - 1; i >= 0; i--) {
                     let s = saboteurs[i]; 
                     s.x -= mannSpeed; 
                     s.el.style.left = s.x + "%";
                     
-                    if (Math.abs(s.x - shipX) < 6 && Math.abs(s.y - shipY) < 12) {
-                        shipX = Math.min(94, shipX + 28);
-                        playSound(300, 0.15); s.el.remove(); saboteurs.splice(i, 1);
+                    if (Math.abs(s.x - shipX) < 7 && Math.abs(s.y - shipY) < 14) {
+                        shipX = Math.min(94, shipX + 35); // VIOLENT KNOCKBACK
+                        playSound(300, 0.2); s.el.remove(); saboteurs.splice(i, 1);
                     } else if (s.x < -10) { s.el.remove(); saboteurs.splice(i, 1); }
                 }
 
-                if (earthDays % 15 === 0) {
+                if (earthDays % 10 === 0) {
                     document.getElementById('transmission').innerText = "> " + crewArchives[Math.floor(Math.random()*crewArchives.length)];
                 }
             }, 1250);
