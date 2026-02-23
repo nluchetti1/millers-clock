@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GARGANTUA_OS // V.31</title>
+    <title>GARGANTUA_OS // V.32</title>
     <style>
         :root { 
             --neon-blue: #00f3ff; --neon-pink: #ff0055; --terminal-green: #00ff41; 
@@ -23,7 +23,6 @@
             border: 1px solid var(--neon-blue); width: 88%; max-width: 450px; z-index: 10;
         }
 
-        /* 5th Dimension Warp */
         .tesseract-warp { animation: tesseract-unfold 5s forwards; pointer-events: none; }
         @keyframes tesseract-unfold {
             0% { transform: translateZ(0); }
@@ -42,17 +41,21 @@
             box-shadow: 0 0 10px #fff;
         }
 
-        /* Saboteur Style */
+        /* Digital Mann Avatar */
         .saboteur {
             position: absolute; width: 32px; height: 32px;
-            background-color: #333;
-            border-radius: 50%; border: 2px solid var(--neon-pink);
+            background: radial-gradient(circle, #555 20%, #222 80%);
+            border-radius: 50%; border: 2px solid #fff;
             box-shadow: 0 0 15px var(--neon-pink);
             display: flex; align-items: center; justify-content: center;
-            font-size: 8px; font-weight: bold; color: white;
-            animation: mann-glitch 0.15s infinite;
         }
-        @keyframes mann-glitch { 50% { filter: contrast(3); transform: scale(1.1); } }
+        .saboteur::before {
+            content: "MANN"; font-size: 7px; color: var(--neon-pink); font-weight: bold;
+        }
+        .saboteur::after {
+            content: ""; position: absolute; top: 20%; width: 60%; height: 30%;
+            background: rgba(255,255,255,0.2); border-radius: 50% 50% 0 0;
+        }
 
         input {
             width: 100%; padding: 8px; background: #000; border: 1px solid var(--neon-blue); 
@@ -79,14 +82,14 @@
         <div id="warningHeader" style="background:var(--neon-pink); color:#fff; font-size:0.65rem; text-align:center; display:none; padding:5px; margin-bottom:8px; font-weight:bold;">
             SINGULARITY PRESSURE: HULL COMPROMISED
         </div>
-        <h1 style="font-size: 0.85rem; text-align: center; letter-spacing: 4px;">GARGANTUA_OS_V31</h1>
+        <h1 style="font-size: 0.85rem; text-align: center; letter-spacing: 4px;">GARGANTUA_OS_V32</h1>
         
-        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Sync Target: 40 Years. Don't hide in the dark, Cooper."</div>
+        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Sync Target: 20 Years. Do not hide in the dark."</div>
         
         <button class="btn-mission" id="startBtn" onclick="initiateMission()" style="background:var(--neon-pink); color:#fff; border:none; padding:12px; width:100%; font-weight:bold; cursor:pointer;">ENGAGE MISSION</button>
 
         <div id="ui-elements" style="display:none">
-            <input type="text" id="objName" placeholder="ACTIVITY_NAME">
+            <input type="text" id="objName" placeholder="MISSION_OBJECTIVE">
             <input type="number" id="earthInput" placeholder="EARTH_MINS" oninput="calculate()">
 
             <div style="width: 100%; height: 5px; background: #222; margin-top:10px;"><div id="hullFill" style="width: 100%; height: 100%; background: var(--terminal-green); transition: 0.2s;"></div></div>
@@ -164,9 +167,8 @@
 
                 let dilation = (shipX > 20) ? Math.floor(Math.pow(1.09, shipX - 20) + 1) : 1;
                 
-                // NEW EXPLOIT PREVENTION: Singularity Damage
                 if (shipX > 75) {
-                    hull -= 5; // Automatic hull damage for staying too deep
+                    hull -= 6; 
                     document.getElementById('warningHeader').innerText = "CRITICAL: SINGULARITY PRESSURE BREACH";
                     document.getElementById('warningHeader').style.display = 'block';
                 } else if (dilation > 1) {
@@ -183,14 +185,13 @@
                 document.getElementById('hullFill').style.width = hull + "%";
                 document.getElementById('hullPct').innerText = hull;
 
-                if (yrs >= 40) {
+                if (yrs >= 20) {
                     clearInterval(timer);
                     win();
                 }
 
-                // SABOTEUR SPAWNING (Relentless)
                 if (Math.random() > 0.4) spawnMann();
-                if (shipX > 70) spawnMann(); // Guaranteed extra spawn in the "Hiding Zone"
+                if (shipX > 70) spawnMann();
 
                 for (let i = saboteurs.length - 1; i >= 0; i--) {
                     let s = saboteurs[i]; 
@@ -203,14 +204,13 @@
                     } else if (s.x < -15) { s.el.remove(); saboteurs.splice(i, 1); }
                 }
 
-                playSound(1200 + (yrs * 20), 0.05);
+                playSound(1200 + (yrs * 40), 0.05);
             }, 1250);
         }
 
         function spawnMann() {
             const sab = document.createElement('div');
             sab.className = 'saboteur';
-            sab.innerHTML = "MANN"; 
             sab.style.left = '110%'; sab.style.top = Math.random() * 80 + '%';
             document.getElementById('gameArea').appendChild(sab);
             saboteurs.push({el: sab, x: 110, y: parseFloat(sab.style.top)});
