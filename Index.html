@@ -25,7 +25,6 @@
             position: relative;
         }
 
-        /* The Mountain Wave */
         .wave {
             position: absolute;
             bottom: 0;
@@ -119,10 +118,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            animation: fadeIn 1s;
+            transition: opacity 0.5s;
         }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         #status { font-size: 0.6rem; color: var(--accent); margin-top: 20px; letter-spacing: 1px; }
     </style>
@@ -178,7 +175,6 @@
             "Today's my birthday. And it's a special one...",
             "I'm the same age now as you were when you left.",
             "You were gone a long time. I thought you weren't coming back.",
-            "Brand... she's waiting. Don't take too long.",
             "Grandpa died today. We buried him in the back lot.",
             "The dust is getting worse. We're leaving the farm.",
             "I'm letting you go, Dad.",
@@ -194,14 +190,13 @@
             document.getElementById('status').innerText = "DATA FEED ACTIVE: 1 TICK = 24H EARTH TIME";
             
             setInterval(() => {
-                tickSound.play();
+                tickSound.play().catch(() => {}); // Catch browser auto-play errors
                 earthDays++;
                 
                 const years = (earthDays / 365.25);
                 document.getElementById('dayCounter').innerText = earthDays;
                 document.getElementById('yearCounter').innerText = years.toFixed(2);
                 
-                // Trigger Message from Home every Earth Year
                 if (Math.floor(years) > lastYearMark) {
                     lastYearMark = Math.floor(years);
                     displayMessage();
@@ -235,9 +230,7 @@
             const mins = document.getElementById('earthInput').value;
             const display = document.getElementById('millerTime');
             if (!mins || mins <= 0) { display.innerText = "0.0000s"; return; }
-
             const millerSecs = (mins / (RATIO * 60)) * 3600;
-
             if (millerSecs < 60) {
                 display.innerText = millerSecs.toFixed(4) + "s";
             } else if (millerSecs < 3600) {
