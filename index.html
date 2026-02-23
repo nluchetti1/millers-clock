@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GARGANTUA_OS // V.32</title>
+    <title>GARGANTUA_OS // V.33</title>
     <style>
         :root { 
             --neon-blue: #00f3ff; --neon-pink: #ff0055; --terminal-green: #00ff41; 
@@ -41,7 +41,6 @@
             box-shadow: 0 0 10px #fff;
         }
 
-        /* Digital Mann Avatar */
         .saboteur {
             position: absolute; width: 32px; height: 32px;
             background: radial-gradient(circle, #555 20%, #222 80%);
@@ -51,10 +50,6 @@
         }
         .saboteur::before {
             content: "MANN"; font-size: 7px; color: var(--neon-pink); font-weight: bold;
-        }
-        .saboteur::after {
-            content: ""; position: absolute; top: 20%; width: 60%; height: 30%;
-            background: rgba(255,255,255,0.2); border-radius: 50% 50% 0 0;
         }
 
         input {
@@ -74,7 +69,7 @@
 
     <div id="winScreen">
         <h1 style="font-size: 3rem; margin: 0;">S T A Y</h1>
-        <p>GRAVITY TRANSCENDS DIMENSIONS. <br> QUANTUM DATA SENT. <br> HUMANITY IS SAVED.</p>
+        <p>DATA TRANSMITTED. <br> HUMANITY IS SAVED.</p>
         <button onclick="location.reload()" style="padding:15px 30px; background:#000; color:#fff; border:none; margin-top:20px; cursor:pointer;">RE-SYNC</button>
     </div>
 
@@ -82,9 +77,9 @@
         <div id="warningHeader" style="background:var(--neon-pink); color:#fff; font-size:0.65rem; text-align:center; display:none; padding:5px; margin-bottom:8px; font-weight:bold;">
             SINGULARITY PRESSURE: HULL COMPROMISED
         </div>
-        <h1 style="font-size: 0.85rem; text-align: center; letter-spacing: 4px;">GARGANTUA_OS_V32</h1>
+        <h1 style="font-size: 0.85rem; text-align: center; letter-spacing: 4px;">GARGANTUA_OS_V33</h1>
         
-        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Sync Target: 20 Years. Do not hide in the dark."</div>
+        <div id="tarsDisplay" style="font-size:0.55rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: "Data Sync Target: 20 Years. Watch the hull."</div>
         
         <button class="btn-mission" id="startBtn" onclick="initiateMission()" style="background:var(--neon-pink); color:#fff; border:none; padding:12px; width:100%; font-weight:bold; cursor:pointer;">ENGAGE MISSION</button>
 
@@ -156,17 +151,13 @@
             document.getElementById('ui-elements').style.display = 'block';
             
             const timer = setInterval(() => {
-                if (hull <= 0) {
-                    clearInterval(timer);
-                    document.getElementById('tarsDisplay').innerText = "TARS: Mission failed.";
-                    return;
-                }
-
+                // Gravity Drift
                 shipX = Math.min(94, shipX + (3 + shipX/12));
                 updateShip();
 
                 let dilation = (shipX > 20) ? Math.floor(Math.pow(1.09, shipX - 20) + 1) : 1;
                 
+                // Pressure Damage
                 if (shipX > 75) {
                     hull -= 6; 
                     document.getElementById('warningHeader').innerText = "CRITICAL: SINGULARITY PRESSURE BREACH";
@@ -178,12 +169,25 @@
                     document.getElementById('warningHeader').style.display = 'none';
                 }
 
+                // Update Stats
                 days += dilation;
                 let yrs = days / 365.25;
                 document.getElementById('dayCounter').innerText = days;
                 document.getElementById('yearCounter').innerText = yrs.toFixed(2);
+                
+                // Fail Check (happens AFTER damage is taken)
+                if (hull <= 0) {
+                    hull = 0;
+                    document.getElementById('hullFill').style.width = "0%";
+                    document.getElementById('hullPct').innerText = "0";
+                    document.getElementById('tarsDisplay').innerText = "TARS: Hull failure at 0%. Mission lost.";
+                    clearInterval(timer);
+                    missionActive = false;
+                    return;
+                }
+                
                 document.getElementById('hullFill').style.width = hull + "%";
-                document.getElementById('hullPct').innerText = hull;
+                document.getElementById('hullPct').innerText = Math.max(0, hull);
 
                 if (yrs >= 20) {
                     clearInterval(timer);
