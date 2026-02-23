@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GARGANTUA_OS // V.09</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GARGANTUA_OS // V.10</title>
     <style>
         :root { 
             --neon-blue: #00f3ff; --neon-pink: #ff0055; --terminal-green: #00ff41; --bg: #020205; 
@@ -15,6 +15,7 @@
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; min-height: 100vh; margin: 0;
             overflow: hidden; position: relative;
+            touch-action: manipulation;
         }
 
         body::before {
@@ -38,16 +39,16 @@
         @keyframes drift { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .container {
-            background: rgba(5, 5, 12, 0.96); padding: 1.5rem; 
-            border: 1px solid var(--neon-blue); width: 85%; max-width: 450px; z-index: 10;
+            background: rgba(5, 5, 12, 0.96); padding: 1.2rem; 
+            border: 1px solid var(--neon-blue); width: 88%; max-width: 450px; z-index: 10;
             box-shadow: 0 0 25px rgba(0, 243, 255, 0.2); position: relative;
         }
 
-        h1 { font-size: 1.1rem; letter-spacing: 5px; margin: 0; text-align: center; color: #fff; }
+        h1 { font-size: 1rem; letter-spacing: 3px; margin: 0; text-align: center; color: #fff; }
         
         input {
             width: 100%; padding: 8px; background: #000; border: 1px solid var(--neon-blue); 
-            color: var(--neon-blue); margin: 5px 0; font-family: inherit; font-size: 0.8rem;
+            color: var(--neon-blue); margin: 5px 0; font-family: inherit; font-size: 0.8rem; box-sizing: border-box;
         }
 
         .btn-mission {
@@ -55,29 +56,27 @@
             width: 100%; cursor: pointer; font-weight: bold; margin-bottom: 10px; font-family: inherit;
         }
 
-        #millerTime { font-size: 2rem; color: #fff; display: block; text-align: center; margin: 5px 0; }
-        
-        #fuelFill { width: 100%; height: 6px; background: var(--terminal-green); transition: 0.2s; }
+        #millerTime { font-size: 1.8rem; color: #fff; display: block; text-align: center; margin: 5px 0; }
+        #fuelFill { width: 100%; height: 6px; background: var(--terminal-green); transition: 0.1s; }
 
-        /* Mini Game Styles */
         #gameArea {
-            margin-top: 15px; border: 1px dashed #444; height: 80px; position: relative;
-            background: rgba(0,0,0,0.5); overflow: hidden;
+            margin-top: 10px; border: 1px dashed #444; height: 100px; position: relative;
+            background: rgba(0,0,0,0.7); overflow: hidden; touch-action: none;
         }
         #endurance {
-            position: absolute; left: 10px; top: 40%; width: 20px; height: 20px;
+            position: absolute; left: 15px; top: 40%; width: 24px; height: 24px;
             background: #fff; clip-path: polygon(0 40%, 100% 0, 70% 50%, 100% 100%, 0 60%);
-            transition: top 0.1s;
+            transition: top 0.05s linear;
         }
         .safe-zone {
-            position: absolute; right: 0; top: 20%; height: 40%; width: 20px;
-            background: rgba(0, 255, 65, 0.3); border-left: 2px solid var(--terminal-green);
+            position: absolute; right: 0; top: 25%; height: 35%; width: 30px;
+            background: rgba(0, 255, 65, 0.2); border-left: 2px solid var(--terminal-green);
         }
-        #gameStatus { font-size: 0.5rem; text-align: center; margin-top: 5px; color: var(--terminal-green); }
 
         #transmission { 
-            height: 60px; font-size: 0.65rem; font-style: italic; color: #aaa; 
+            height: 75px; font-size: 0.65rem; font-style: italic; color: #aaa; 
             margin-top: 10px; border-left: 2px solid var(--neon-pink); padding-left: 10px;
+            display: flex; align-items: center; overflow: hidden;
         }
     </style>
 </head>
@@ -87,124 +86,152 @@
 
     <div class="container" id="mainCard">
         <h1>GARGANTUA_STATION_KEEPING</h1>
-        <div id="tarsDisplay" style="font-size:0.6rem; color:var(--terminal-green); margin:10px 0;">TARS: Thrusters hot. Romilly is counting on you.</div>
+        <div id="tarsDisplay" style="font-size:0.6rem; color:var(--terminal-green); margin:8px 0; min-height: 24px;">TARS: Thrusters hot. Romilly is counting on you.</div>
         
-        <button class="btn-mission" id="startBtn" onclick="initiateMission()">START MISSION</button>
+        <button class="btn-mission" id="startBtn">START MISSION</button>
 
-        <label style="font-size: 0.5rem;">TASK_ID</label>
-        <input type="text" id="customTask" placeholder="OBJECTIVE..." oninput="calculate()">
-        <input type="number" id="earthInput" placeholder="EARTH_MINS" oninput="calculate()">
+        <div id="ui-elements" style="display:none">
+            <input type="text" id="customTask" placeholder="OBJECTIVE...">
+            <input type="number" id="earthInput" placeholder="EARTH_MINS">
 
-        <div class="result-box">
-            <span id="millerTime">0.0000s</span>
-            <div style="background: #111; height: 6px; margin: 5px 0;"><div id="fuelFill"></div></div>
-            <p style="font-size: 0.5rem; text-align: left; margin: 0;">FUEL: <span id="fuelPct">100</span>%</p>
-            
-            <div style="display:flex; justify-content:space-around; text-align:center; margin-top:10px;">
-                <div><span id="dayCounter" style="font-size:1.1rem; font-weight:bold;">0</span><br><span style="font-size:0.4rem">DAYS_LOST</span></div>
-                <div><span id="yearCounter" style="font-size:1.1rem; font-weight:bold;">0.00</span><br><span style="font-size:0.4rem">YEARS_LOST</span></div>
+            <div class="result-box">
+                <span id="millerTime">0.0000s</span>
+                <div style="background: #111; height: 6px; margin: 5px 0;"><div id="fuelFill"></div></div>
+                <p style="font-size: 0.5rem; text-align: left; margin: 0;">FUEL: <span id="fuelPct">100</span>%</p>
+                
+                <div style="display:flex; justify-content:space-around; text-align:center; margin-top:5px;">
+                    <div><span id="dayCounter" style="font-size:1rem; font-weight:bold;">0</span><br><span style="font-size:0.4rem">DAYS_LOST</span></div>
+                    <div><span id="yearCounter" style="font-size:1rem; font-weight:bold;">0.00</span><br><span style="font-size:0.4rem">YEARS_LOST</span></div>
+                </div>
+
+                <div id="gameArea">
+                    <div class="safe-zone"></div>
+                    <div id="endurance"></div>
+                    <div style="position:absolute; bottom:5px; width:100%; text-align:center; font-size:0.5rem; color:var(--neon-blue); opacity:0.6;">TAP SCREEN TO PULSE</div>
+                </div>
+                
+                <div id="transmission">> COMMS_OFFLINE</div>
             </div>
-
-            <div id="gameArea" onclick="pulseThrusters()">
-                <div class="safe-zone"></div>
-                <div id="endurance"></div>
-                <div style="position:absolute; bottom:2px; right:5px; font-size:0.4rem; color:#666;">TAP TO PULSE</div>
-            </div>
-            <div id="gameStatus">STATION KEEPING: NOMINAL</div>
-            
-            <div id="transmission">> COMMS_OFFLINE</div>
         </div>
     </div>
 
     <script>
         const RATIO = 61320;
         let audioCtx, earthDays = 0, fuel = 100, missionActive = false;
-        let endurancePos = 40, gravity = 0.8, velocity = 0;
+        let endurancePos = 40, gravity = 0.5, velocity = 0;
 
         const enduranceComms = [
             "COOPER: This little maneuver's gonna cost us 51 years!",
             "ROMILLY: I've waited years. I've studied the anomaly.",
             "MURPH: Don't let me leave, Murph!",
             "BRAND: Love transcends time and space.",
-            "PROF. BRAND: Do not go gentle into that good night.",
+            "PROF. BRAND: I'm not afraid of death. I'm afraid of time.",
             "DOYLE: Start the engines, Cooper!",
-            "TARS: Plenty of slave labor left for the robots."
+            "TARS: Plenty of slave labor left for the robots.",
+            "PROF. BRAND: Do not go gentle into that good night.",
+            "DOYLE: We are staying! We're not leaving without that data!",
+            "COOPER: Mankind was born on Earth. It was never meant to die here.",
+            "CASE: We are picking up an anomaly.",
+            "ROMILLY: Seven years per hour... that's much worse than I thought.",
+            "PROF. BRAND: We must reach far beyond our own lifespans."
         ];
 
-        function playClick(pitch = 1500) {
+        const tarsQuotes = [
+            "TARS: Honesty 90%. You're looking terrified, Cooper.",
+            "TARS: Humor 75%. Self-destruct in 5...",
+            "TARS: Romilly is aging at a rate of 1:60,000.",
+            "TARS: Thrusters are losing efficiency.",
+            "TARS: Want me to lower the humor settings?"
+        ];
+
+        function playClick(pitch = 1200) {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'square'; osc.frequency.value = pitch;
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.02);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
             osc.connect(gain); gain.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + 0.02);
         }
 
-        function pulseThrusters() {
+        function pulseThrusters(e) {
             if (!missionActive) return;
-            velocity -= 4; // Lift Endurance
-            playClick(2000);
+            e.preventDefault();
+            velocity = -3.5; // Upward force
+            playClick(1800);
         }
 
-        function initiateMission() {
+        // Event Listeners for Game
+        const gameArea = document.getElementById('gameArea');
+        gameArea.addEventListener('touchstart', pulseThrusters, {passive: false});
+        gameArea.addEventListener('mousedown', pulseThrusters);
+
+        document.getElementById('startBtn').addEventListener('click', () => {
             missionActive = true;
             document.getElementById('startBtn').style.display = 'none';
-            
+            document.getElementById('ui-elements').style.display = 'block';
+            startEngine();
+        });
+
+        function startEngine() {
             setInterval(() => {
                 if (fuel <= 0) return;
 
-                // Physics of the Ship
+                // Physics
                 velocity += gravity;
                 endurancePos += velocity;
+                
+                // Bounds
+                if (endurancePos > 95) { endurancePos = 95; velocity = 0; }
+                if (endurancePos < -5) { endurancePos = -5; velocity = 0; }
+                
                 document.getElementById('endurance').style.top = endurancePos + "%";
 
-                // Check Station Keeping
-                const status = document.getElementById('gameStatus');
-                const tars = document.getElementById('tarsDisplay');
+                // Station Keeping Logic
                 let dilationMultiplier = 1;
+                const tars = document.getElementById('tarsDisplay');
 
-                if (endurancePos < 20 || endurancePos > 60) {
-                    status.innerText = "WARNING: GRAVITY WELL PENETRATION";
-                    status.style.color = "var(--neon-pink)";
-                    dilationMultiplier = 5; // Time speeds up 5x if you fail the game
-                    tars.innerText = "TARS: Cooper! We're slipping! Romilly is aging!";
+                if (endurancePos < 25 || endurancePos > 60) {
+                    dilationMultiplier = 8; // Penalty for failing game
+                    tars.innerText = "TARS: WARNING! Gravitational shear! Romilly is aging!";
+                    tars.style.color = "var(--neon-pink)";
                 } else {
-                    status.innerText = "STATION KEEPING: NOMINAL";
-                    status.style.color = "var(--terminal-green)";
                     dilationMultiplier = 1;
+                    if (earthDays % 15 === 0) tars.innerText = tarsQuotes[Math.floor(Math.random()*tarsQuotes.length)];
+                    tars.style.color = "var(--terminal-green)";
                 }
-
-                // Out of bounds check
-                if (endurancePos > 95 || endurancePos < -5) endurancePos = 40;
 
                 playClick();
                 earthDays += (1 * dilationMultiplier);
-                const years = (earthDays / 365.25);
-                document.getElementById('dayCounter').innerText = earthDays;
-                document.getElementById('yearCounter').innerText = years.toFixed(2);
                 
-                // Accelerated Fuel Depletion
-                fuel -= 0.15; 
+                document.getElementById('dayCounter').innerText = earthDays;
+                document.getElementById('yearCounter').innerText = (earthDays / 365.25).toFixed(2);
+                
+                // Faster Fuel Drain
+                fuel -= 0.25; 
                 document.getElementById('fuelFill').style.width = Math.max(0, fuel) + "%";
                 document.getElementById('fuelPct').innerText = Math.max(0, Math.floor(fuel));
                 
-                if (earthDays % 20 === 0) {
+                if (earthDays % 15 === 0) {
                     document.getElementById('transmission').innerText = "> " + enduranceComms[Math.floor(Math.random()*enduranceComms.length)];
                 }
 
-                document.getElementById('waveBox').style.height = Math.min((earthDays/300)*100, 100) + "vh";
+                document.getElementById('waveBox').style.height = Math.min((earthDays/200)*100, 100) + "vh";
 
                 if (fuel <= 0) {
-                    document.getElementById('tarsDisplay').innerText = "TARS: Fuel exhausted. Romilly has passed away. Goodbye.";
-                    document.getElementById('mainCard').style.filter = "grayscale(1) contrast(1.5)";
+                    tars.innerText = "TARS: Fuel exhausted. Station lost. Romilly is gone.";
+                    document.getElementById('mainCard').style.filter = "grayscale(1) brightness(0.5)";
                 }
+                
+                calculate();
             }, 1250);
         }
 
         function calculate() {
             const mins = document.getElementById('earthInput').value;
+            if (!mins) return;
             const millerSecs = (mins / (RATIO * 60)) * 3600;
             document.getElementById('millerTime').innerText = millerSecs < 60 ? millerSecs.toFixed(4) + "s" : (millerSecs / 60).toFixed(2) + "m";
         }
