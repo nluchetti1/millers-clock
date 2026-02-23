@@ -9,7 +9,7 @@
             --accent: #4cc9f0; 
             --danger: #ff4d4d;
             --bg: #05070a; 
-            --card-bg: rgba(10, 12, 18, 0.9);
+            --card-bg: rgba(10, 12, 18, 0.95);
         }
         body {
             background-color: var(--bg);
@@ -23,6 +23,28 @@
             margin: 0;
             overflow: hidden;
             position: relative;
+        }
+
+        /* Gargantua Visual Effect */
+        .gargantua {
+            width: 120px;
+            height: 120px;
+            background: #000;
+            border-radius: 50%;
+            margin: 0 auto 20px auto;
+            position: relative;
+            box-shadow: 0 0 20px #fff, 0 0 40px var(--accent), 0 0 60px #f0a500;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .accretion-disk {
+            position: absolute;
+            top: 50%;
+            left: -20%;
+            width: 140%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #f0a500, #fff, #f0a500, transparent);
+            transform: translateY(-50%) rotate(-5deg);
+            filter: blur(1px);
         }
 
         .wave {
@@ -48,7 +70,7 @@
             width: 90%;
             max-width: 480px;
             z-index: 10;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
         }
 
         h1 { color: var(--accent); letter-spacing: 6px; text-transform: uppercase; margin: 0; font-size: 1.4rem; }
@@ -66,6 +88,7 @@
             box-sizing: border-box;
             font-size: 0.9rem;
             outline: none;
+            margin-bottom: 5px;
         }
 
         .result-box {
@@ -75,27 +98,21 @@
             border: 1px solid #222;
         }
 
-        #millerTime {
-            font-size: 2.2rem;
-            color: #fff;
-            display: block;
-            margin: 5px 0;
-            font-weight: bold;
-        }
+        #activityTag { font-size: 0.8rem; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
+        #millerTime { font-size: 2.2rem; color: #fff; display: block; font-weight: bold; }
 
         .btn-mission {
-            background: transparent;
-            color: var(--accent);
-            border: 1px solid var(--accent);
+            background: var(--accent);
+            color: #000;
+            border: none;
             padding: 15px;
             font-weight: bold;
             cursor: pointer;
             text-transform: uppercase;
             width: 100%;
             margin-bottom: 10px;
-            transition: 0.3s;
+            box-shadow: 0 0 20px rgba(76, 201, 240, 0.3);
         }
-        .btn-mission:hover { background: var(--accent); color: #000; }
 
         .ticker-group {
             display: flex;
@@ -105,22 +122,10 @@
             border-top: 1px solid #222;
         }
 
-        .ticker-item { flex: 1; }
         .ticker-val { display: block; font-size: 1rem; color: var(--danger); font-weight: bold; }
         .ticker-label { font-size: 0.55rem; color: #666; text-transform: uppercase; }
 
-        #messageLog {
-            height: 40px;
-            margin-top: 15px;
-            font-size: 0.75rem;
-            color: #fff;
-            font-style: italic;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.5s;
-        }
-
+        #messageLog { height: 40px; margin-top: 15px; font-size: 0.75rem; color: #fff; font-style: italic; }
         #status { font-size: 0.6rem; color: var(--accent); margin-top: 20px; letter-spacing: 1px; }
     </style>
 </head>
@@ -129,56 +134,58 @@
     <div class="wave" id="mountainWave"></div>
 
     <div class="container">
-        <h1>GARGANTUA SYSTEM</h1>
+        <div class="gargantua">
+            <div class="accretion-disk"></div>
+        </div>
+        
+        <h1>GARGANTUA LINK</h1>
         <p class="subtitle">LOCAL TIME DILATION: 61,320x</p>
         
         <button class="btn-mission" id="startBtn" onclick="initiateMission()">Initiate Landing Sequence</button>
 
-        <label>Earth Activity Presets</label>
-        <select id="taskSelect" onchange="updateFromPreset()">
-            <option value="custom">-- MANUAL OVERRIDE --</option>
-            <option value="2">Brush Teeth (2m)</option>
-            <option value="15">Coffee Break (15m)</option>
-            <option value="60">1 Hour Commute (60m)</option>
-            <option value="480">8-Hour Work/Sleep (480m)</option>
-            <option value="1440">One Earth Day (1,440m)</option>
-            <option value="525600">One Earth Year (525,600m)</option>
-        </select>
+        <label>Activity Description</label>
+        <input type="text" id="customTask" placeholder="e.g. Walking the Dog" oninput="calculate()">
 
-        <label>Earth Minutes Spent</label>
-        <input type="number" id="earthInput" placeholder="0" oninput="calculate()">
+        <label>Time Spent on Earth (Minutes)</label>
+        <select id="taskSelect" onchange="updateFromPreset()">
+            <option value="custom">-- Use Manual Input --</option>
+            <option value="2">Brush Teeth (2m)</option>
+            <option value="480">8-Hour Work Day (480m)</option>
+            <option value="1440">One Earth Day (1,440m)</option>
+        </select>
+        <input type="number" id="earthInput" placeholder="Enter minutes..." oninput="calculate()">
 
         <div class="result-box">
-            <label>Miller's Planet Equivalent</label>
+            <div id="activityTag">STATIONARY</div>
+            <label>Miller's Equivalent</label>
             <span id="millerTime">0.0000s</span>
             
             <div class="ticker-group">
-                <div class="ticker-item">
+                <div class="ticker-item" style="flex:1">
                     <span class="ticker-val" id="dayCounter">0</span>
                     <span class="ticker-label">Days Lost</span>
                 </div>
-                <div class="ticker-item">
+                <div class="ticker-item" style="flex:1">
                     <span class="ticker-val" id="yearCounter">0.00</span>
                     <span class="ticker-label">Years Lost</span>
                 </div>
             </div>
-            <div id="messageLog">Awaiting comms...</div>
+            <div id="messageLog">SIGNAL STANDBY...</div>
         </div>
         
-        <div id="status">SENSOR STATUS: STANDBY</div>
+        <div id="status">SENSOR STATUS: OFFLINE</div>
     </div>
 
     <script>
         const RATIO = 61320; 
-        const tickSound = new Audio('https://www.soundjay.com/buttons/button-20.mp3');
+        const tickSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
         const messages = [
-            "Today's my birthday. And it's a special one...",
-            "I'm the same age now as you were when you left.",
-            "You were gone a long time. I thought you weren't coming back.",
-            "Grandpa died today. We buried him in the back lot.",
-            "The dust is getting worse. We're leaving the farm.",
+            "Today's my birthday. I'm the same age as you.",
+            "You were gone a long time.",
+            "I thought you weren't coming back.",
+            "The dust is getting worse.",
             "I'm letting you go, Dad.",
-            "It's been years. Do you even know how long it's been?"
+            "Grandpa died today."
         ];
 
         let earthDays = 0;
@@ -190,32 +197,24 @@
             document.getElementById('status').innerText = "DATA FEED ACTIVE: 1 TICK = 24H EARTH TIME";
             
             setInterval(() => {
-                tickSound.play().catch(() => {}); // Catch browser auto-play errors
-                earthDays++;
+                tickSound.currentTime = 0;
+                tickSound.play().catch(e => {}); // Play tick sound
                 
+                earthDays++;
                 const years = (earthDays / 365.25);
                 document.getElementById('dayCounter').innerText = earthDays;
                 document.getElementById('yearCounter').innerText = years.toFixed(2);
                 
                 if (Math.floor(years) > lastYearMark) {
                     lastYearMark = Math.floor(years);
-                    displayMessage();
+                    const log = document.getElementById('messageLog');
+                    log.innerText = `"${messages[Math.floor(Math.random() * messages.length)]}"`;
                 }
 
                 waveHeight += 0.8; 
                 if (waveHeight > 85) waveHeight = 85; 
                 document.getElementById('mountainWave').style.height = waveHeight + 'vh';
             }, 1250);
-        }
-
-        function displayMessage() {
-            const log = document.getElementById('messageLog');
-            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-            log.style.opacity = 0;
-            setTimeout(() => {
-                log.innerText = `"${randomMsg}"`;
-                log.style.opacity = 1;
-            }, 500);
         }
 
         function updateFromPreset() {
@@ -228,16 +227,14 @@
 
         function calculate() {
             const mins = document.getElementById('earthInput').value;
+            const task = document.getElementById('customTask').value || "CURRENT TASK";
             const display = document.getElementById('millerTime');
+            
+            document.getElementById('activityTag').innerText = task;
+
             if (!mins || mins <= 0) { display.innerText = "0.0000s"; return; }
             const millerSecs = (mins / (RATIO * 60)) * 3600;
-            if (millerSecs < 60) {
-                display.innerText = millerSecs.toFixed(4) + "s";
-            } else if (millerSecs < 3600) {
-                display.innerText = (millerSecs / 60).toFixed(2) + "m";
-            } else {
-                display.innerText = (millerSecs / 3600).toFixed(2) + "h";
-            }
+            display.innerText = millerSecs < 60 ? millerSecs.toFixed(4) + "s" : (millerSecs / 60).toFixed(2) + "m";
         }
     </script>
 </body>
